@@ -3,9 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const isConfigured = SUPABASE_URL && SUPABASE_URL !== 'PENDIENTE' && SUPABASE_KEY && SUPABASE_KEY !== 'PENDIENTE';
+const clean = (v) => (v || '').trim();
+const isConfigured = clean(SUPABASE_URL).startsWith('https://') && clean(SUPABASE_KEY).length > 20;
 
-export const supabase = isConfigured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+export const supabase = isConfigured ? createClient(clean(SUPABASE_URL), clean(SUPABASE_KEY)) : null;
 
 /**
  * Guarda una reserva en la tabla "reservas" de Supabase.
