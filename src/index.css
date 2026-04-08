@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Raleway:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8CC7A;
+  --gold-dark: #9A7A2E;
+  --black: #0A0A0A;
+  --dark: #111111;
+  --dark-2: #1A1A1A;
+  --white: #F5F0E8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* React Calendar custom styles */
+.react-calendar {
+  background: #1A1A1A !important;
+  border: 1px solid #C9A84C !important;
+  border-radius: 12px !important;
+  color: #F5F0E8 !important;
+  font-family: 'Raleway', sans-serif !important;
+  width: 100% !important;
+  max-width: 420px;
+  padding: 8px;
+}
+
+.react-calendar__navigation button {
+  color: #C9A84C !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+
+.react-calendar__navigation button:hover,
+.react-calendar__navigation button:focus {
+  background: #2A2A2A !important;
+  border-radius: 8px !important;
+}
+
+.react-calendar__month-view__weekdays {
+  color: #C9A84C !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+}
+
+.react-calendar__month-view__weekdays abbr {
+  text-decoration: none !important;
+}
+
+.react-calendar__month-view__days__day {
+  color: #F5F0E8 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.react-calendar__tile:hover {
+  background: #2A2A2A !important;
+}
+
+.react-calendar__tile--active {
+  background: #C9A84C !important;
+  color: #0A0A0A !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+.react-calendar__tile--now {
+  background: #2A2A2A !important;
+  border: 1px solid #C9A84C !important;
+  border-radius: 8px !important;
+}
+
+.react-calendar__tile:disabled {
+  color: #444 !important;
+  background: transparent !important;
+}
