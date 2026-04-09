@@ -1,7 +1,100 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BookingCalendar from '../components/BookingCalendar';
 import { sendBookingEmail } from '../utils/emailService';
 import { saveReservation } from '../utils/supabase';
+
+// ── Gold sparkles ─────────────────────────────────────────────────────────────
+function GoldSparkles() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const resize = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COLORS = ['#C9A84C','#E8CC7A','#F5F0E8','#FFD700','#9A7A2E'];
+    const particles = Array.from({ length: 120 }, () => ({
+      x:   Math.random() * canvas.width,
+      y:   Math.random() * canvas.height + canvas.height * 0.2,
+      vx:  (Math.random() - 0.5) * 2.5,
+      vy:  -(Math.random() * 4 + 2),
+      size: Math.random() * 5 + 2,
+      alpha: 1,
+      decay: Math.random() * 0.015 + 0.008,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      shape: Math.random() > 0.5 ? 'diamond' : 'circle',
+      spin:  (Math.random() - 0.5) * 0.2,
+      angle: Math.random() * Math.PI * 2,
+    }));
+
+    let raf;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x     += p.vx;
+        p.y     += p.vy;
+        p.vy    += 0.06; // gravity
+        p.alpha -= p.decay;
+        p.angle += p.spin;
+
+        if (p.alpha <= 0) {
+          p.x     = Math.random() * canvas.width;
+          p.y     = canvas.height + 10;
+          p.vy    = -(Math.random() * 4 + 2);
+          p.vx    = (Math.random() - 0.5) * 2.5;
+          p.alpha = 1;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle   = p.color;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+
+        if (p.shape === 'diamond') {
+          ctx.beginPath();
+          ctx.moveTo(0, -p.size);
+          ctx.lineTo(p.size * 0.6, 0);
+          ctx.lineTo(0, p.size);
+          ctx.lineTo(-p.size * 0.6, 0);
+          ctx.closePath();
+          ctx.fill();
+          // glow
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur  = 8;
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'fixed', inset: 0, zIndex: 10, pointerEvents: 'none' }}
+    />
+  );
+}
 
 const SERVICES = [
   'Tratamiento Facial Personalizado',
@@ -87,6 +180,8 @@ export default function Booking() {
 
     if (emailResult.success) {
       setErrorMsg('');
+      // Scroll al top antes de mostrar la pantalla de éxito
+      window.scrollTo({ top: 0, behavior: 'instant' });
       setStatus('success');
 
       // Zapier webhook — no bloquea ni afecta la confirmación si falla
@@ -112,34 +207,69 @@ export default function Booking() {
   // ── Success screen ──────────────────────────────────────────────────────────
   if (status === 'success') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0A0A0A', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 40px', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', background: '#0A0A0A', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(80px,15vw,100px) 20px 40px', overflow: 'hidden' }}>
+
+        {/* Sparkles */}
+        <GoldSparkles />
+
+        {/* Video bg */}
         <video autoPlay muted loop playsInline src="/imperium-video.mp4"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(10px) brightness(0.2) saturate(0.7)', transform: 'scale(1.05)', zIndex: 0 }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.55)', zIndex: 1 }} />
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '500px',
-          background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(201,168,76,0.25)',
-          borderRadius: '20px', padding: '52px 40px', backdropFilter: 'blur(20px)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}>
-          <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>✨</div>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: '2rem', marginBottom: '16px' }}>¡Reserva Confirmada!</h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
-            <div style={{ width: '30px', height: '1px', background: '#C9A84C' }} />
-            <div style={{ width: '4px', height: '4px', background: '#C9A84C', transform: 'rotate(45deg)' }} />
-            <div style={{ width: '30px', height: '1px', background: '#C9A84C' }} />
+          style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(10px) brightness(0.15) saturate(0.6)', transform: 'scale(1.05)', zIndex: 0 }} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.6)', zIndex: 1 }} />
+
+        {/* Card */}
+        <div style={{
+          position: 'relative', zIndex: 20, textAlign: 'center',
+          width: '100%', maxWidth: '480px',
+          background: 'rgba(10,10,10,0.85)',
+          border: '1px solid rgba(201,168,76,0.4)',
+          borderRadius: '20px',
+          padding: 'clamp(32px,6vw,52px) clamp(20px,5vw,40px)',
+          backdropFilter: 'blur(24px)',
+          boxShadow: '0 0 60px rgba(201,168,76,0.15), 0 24px 60px rgba(0,0,0,0.6)',
+          animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+        }}>
+          {/* Crown icon */}
+          <div style={{ fontSize: 'clamp(2.5rem,8vw,3.8rem)', marginBottom: '16px', filter: 'drop-shadow(0 0 16px rgba(201,168,76,0.6))' }}>👑</div>
+
+          <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: 'clamp(1.5rem,5vw,2rem)', marginBottom: '14px', textShadow: '0 0 20px rgba(201,168,76,0.4)' }}>
+            ¡Reserva Confirmada!
+          </h2>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ width: '28px', height: '1px', background: '#C9A84C' }} />
+            <div style={{ width: '4px', height: '4px', background: '#C9A84C', transform: 'rotate(45deg)', boxShadow: '0 0 6px #C9A84C' }} />
+            <div style={{ width: '28px', height: '1px', background: '#C9A84C' }} />
           </div>
-          <p style={{ color: 'rgba(245,240,232,0.7)', lineHeight: 1.8, marginBottom: '12px', fontFamily: 'Raleway, sans-serif' }}>
-            Gracias, <strong style={{ color: '#F5F0E8' }}>{form.nombre}</strong>. Tu cita ha sido agendada para el
+
+          <p style={{ color: 'rgba(245,240,232,0.75)', lineHeight: 1.8, marginBottom: '10px', fontFamily: 'Raleway, sans-serif', fontSize: 'clamp(0.85rem,2.5vw,0.95rem)' }}>
+            Gracias, <strong style={{ color: '#F5F0E8' }}>{form.nombre}</strong>.<br/>Tu cita ha sido agendada para:
           </p>
-          <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: '1.05rem', marginBottom: '8px', fontFamily: 'Raleway, sans-serif', letterSpacing: '0.03em' }}>
-            {formatDateES(selection.date)} a las {selection.time}
+
+          <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '12px', padding: '14px 20px', margin: '16px 0 20px' }}>
+            <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: 'clamp(0.9rem,2.5vw,1rem)', fontFamily: 'Raleway, sans-serif', letterSpacing: '0.03em', marginBottom: '4px' }}>
+              📅 {formatDateES(selection.date)}
+            </p>
+            <p style={{ color: '#E8CC7A', fontWeight: 700, fontSize: 'clamp(1rem,3vw,1.2rem)', fontFamily: 'Playfair Display, serif' }}>
+              🕐 {selection.time} hrs
+            </p>
+          </div>
+
+          <p style={{ color: 'rgba(245,240,232,0.45)', fontSize: 'clamp(0.75rem,2vw,0.85rem)', marginBottom: '28px', fontFamily: 'Raleway, sans-serif' }}>
+            Confirmación enviada a <strong style={{ color: 'rgba(245,240,232,0.8)' }}>{form.email}</strong>
           </p>
-          <p style={{ color: 'rgba(245,240,232,0.5)', fontSize: '0.85rem', marginBottom: '36px', fontFamily: 'Raleway, sans-serif' }}>
-            Recibirás confirmación en <strong style={{ color: '#F5F0E8' }}>{form.email}</strong>
-          </p>
-          <a href="/" style={{ background: 'linear-gradient(135deg, #C9A84C, #9A7A2E)', color: '#0A0A0A', padding: '14px 40px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.18em', fontFamily: 'Raleway, sans-serif', boxShadow: '0 6px 20px rgba(201,168,76,0.35)' }}>
+
+          <a href="/" style={{ display: 'inline-block', background: 'linear-gradient(135deg,#C9A84C,#9A7A2E)', color: '#0A0A0A', padding: 'clamp(12px,3vw,14px) clamp(28px,6vw,40px)', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: 'clamp(0.72rem,2vw,0.8rem)', letterSpacing: '0.18em', fontFamily: 'Raleway, sans-serif', boxShadow: '0 6px 24px rgba(201,168,76,0.4)' }}>
             VOLVER AL INICIO
           </a>
         </div>
+
+        <style>{`
+          @keyframes successPop {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+          }
+        `}</style>
       </div>
     );
   }
