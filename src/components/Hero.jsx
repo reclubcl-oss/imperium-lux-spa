@@ -6,7 +6,7 @@ export default function Hero() {
       id="inicio"
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #0A0A0A 0%, #111111 50%, #0A0A0A 100%)',
+        background: '#0A0A0A',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -15,9 +15,35 @@ export default function Hero() {
         paddingTop: '64px',
       }}
     >
+      {/* Background video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        src="/imperium-video.mp4"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          filter: 'blur(8px) brightness(0.25) saturate(0.8)',
+          transform: 'scale(1.05)',
+          zIndex: 0,
+        }}
+      />
+
+      {/* Dark overlay for extra depth */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.65) 100%)',
+        zIndex: 1,
+      }} />
+
       {/* Decorative gold lines */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2,
         backgroundImage: `
           radial-gradient(ellipse 600px 400px at 20% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
           radial-gradient(ellipse 400px 400px at 80% 20%, rgba(201,168,76,0.04) 0%, transparent 70%)
@@ -26,10 +52,10 @@ export default function Hero() {
       }} />
 
       {/* Horizontal gold lines */}
-      <div style={{ position: 'absolute', top: '30%', left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent)' }} />
-      <div style={{ position: 'absolute', bottom: '25%', left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.1), transparent)' }} />
+      <div style={{ position: 'absolute', top: '30%', left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent)', zIndex: 3 }} />
+      <div style={{ position: 'absolute', bottom: '25%', left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.1), transparent)', zIndex: 3 }} />
 
-      <div style={{ textAlign: 'center', padding: '40px 24px', maxWidth: '800px', position: 'relative', zIndex: 1 }}>
+      <div style={{ textAlign: 'center', padding: '40px 24px', maxWidth: '800px', position: 'relative', zIndex: 3 }}>
         {/* Tag line */}
         <p style={{
           color: '#C9A84C',
