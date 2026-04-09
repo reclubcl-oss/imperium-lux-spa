@@ -87,9 +87,9 @@ export default function BookingCalendar({ onSelect }) {
       {/* Calendar wrapper */}
       <div style={{
         background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(201,168,76,0.2)',
+        border: '1px solid rgba(201,168,76,0.15)',
         borderRadius: '16px',
-        padding: '20px',
+        padding: '22px 20px',
         marginBottom: '28px',
         backdropFilter: 'blur(12px)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
@@ -100,6 +100,22 @@ export default function BookingCalendar({ onSelect }) {
           tileDisabled={isDisabled}
           minDate={today}
           locale="es-ES"
+          maxDetail="month"
+          minDetail="month"
+          navigationLabel={({ date }) =>
+            date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+              .replace(/^\w/, c => c.toUpperCase())
+          }
+          prevLabel={
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          }
+          nextLabel={
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          }
         />
       </div>
 

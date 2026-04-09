@@ -31,66 +31,159 @@ h1, h2, h3, h4 {
   font-family: 'Playfair Display', serif;
 }
 
-/* React Calendar custom styles */
+/* ── React Calendar ─────────────────────────────────────────── */
 .react-calendar {
-  background: #1A1A1A !important;
-  border: 1px solid #C9A84C !important;
-  border-radius: 12px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   color: #F5F0E8 !important;
   font-family: 'Raleway', sans-serif !important;
   width: 100% !important;
-  max-width: 420px;
-  padding: 8px;
+  padding: 0 !important;
 }
 
-.react-calendar__navigation button {
-  color: #C9A84C !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
+/* Navigation bar */
+.react-calendar__navigation {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 18px !important;
+  height: auto !important;
+  gap: 4px !important;
+}
+
+/* Hide year label button (not clickable — pure label) */
+.react-calendar__navigation__label {
+  pointer-events: none !important;
+  cursor: default !important;
   background: transparent !important;
+  border: none !important;
+  flex-grow: 1 !important;
 }
 
-.react-calendar__navigation button:hover,
-.react-calendar__navigation button:focus {
-  background: #2A2A2A !important;
-  border-radius: 8px !important;
-}
-
-.react-calendar__month-view__weekdays {
-  color: #C9A84C !important;
+.react-calendar__navigation__label__labelText {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 1.05rem !important;
   font-weight: 600 !important;
-  text-transform: uppercase !important;
-  font-size: 0.75rem !important;
+  color: #F5F0E8 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: capitalize !important;
+}
+
+/* Show only month in the label (hide year part) */
+.react-calendar__navigation__label__labelText--from::after {
+  display: none;
+}
+
+/* Hide the year2 label entirely if shown */
+.react-calendar__navigation__label__divider,
+.react-calendar__navigation__label__labelText--to {
+  display: none !important;
+}
+
+/* Prev / Next month arrows */
+.react-calendar__navigation__arrow {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 50% !important;
+  background: rgba(201,168,76,0.08) !important;
+  border: 1px solid rgba(201,168,76,0.25) !important;
+  color: #C9A84C !important;
+  font-size: 1.1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.react-calendar__navigation__arrow:hover {
+  background: rgba(201,168,76,0.2) !important;
+  border-color: #C9A84C !important;
+  box-shadow: 0 0 12px rgba(201,168,76,0.2) !important;
+}
+
+/* Hide decade prev/next (we only want month arrows) */
+.react-calendar__navigation__prev2-button,
+.react-calendar__navigation__next2-button {
+  display: none !important;
+}
+
+/* Weekday headers */
+.react-calendar__month-view__weekdays {
+  margin-bottom: 8px !important;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  text-align: center !important;
+  padding: 4px 0 !important;
 }
 
 .react-calendar__month-view__weekdays abbr {
   text-decoration: none !important;
-}
-
-.react-calendar__month-view__days__day {
-  color: #F5F0E8 !important;
-  border-radius: 8px !important;
-  background: transparent !important;
-}
-
-.react-calendar__tile:hover {
-  background: #2A2A2A !important;
-}
-
-.react-calendar__tile--active {
-  background: #C9A84C !important;
-  color: #0A0A0A !important;
-  border-radius: 8px !important;
+  font-family: 'Raleway', sans-serif !important;
+  font-size: 0.65rem !important;
   font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  color: rgba(201,168,76,0.7) !important;
+  text-transform: uppercase !important;
+}
+
+/* Day tiles */
+.react-calendar__tile {
+  aspect-ratio: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  font-family: 'Raleway', sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  color: #F5F0E8 !important;
+  background: transparent !important;
+  transition: all 0.18s !important;
+  border: 1px solid transparent !important;
+  padding: 6px !important;
+}
+
+.react-calendar__tile:enabled:hover {
+  background: rgba(201,168,76,0.12) !important;
+  border-color: rgba(201,168,76,0.3) !important;
+  color: #C9A84C !important;
+}
+
+.react-calendar__tile--active,
+.react-calendar__tile--active:enabled:hover {
+  background: linear-gradient(135deg, #C9A84C, #9A7A2E) !important;
+  color: #0A0A0A !important;
+  border-color: transparent !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(201,168,76,0.4) !important;
 }
 
 .react-calendar__tile--now {
-  background: #2A2A2A !important;
-  border: 1px solid #C9A84C !important;
-  border-radius: 8px !important;
+  background: rgba(201,168,76,0.07) !important;
+  border: 1px solid rgba(201,168,76,0.4) !important;
+  color: #C9A84C !important;
+  font-weight: 600 !important;
+}
+
+.react-calendar__tile--now.react-calendar__tile--active {
+  background: linear-gradient(135deg, #C9A84C, #9A7A2E) !important;
+  color: #0A0A0A !important;
+  border-color: transparent !important;
 }
 
 .react-calendar__tile:disabled {
-  color: #444 !important;
+  color: rgba(245,240,232,0.18) !important;
   background: transparent !important;
+  border-color: transparent !important;
+  cursor: not-allowed !important;
+}
+
+/* Neighbor month days */
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: rgba(245,240,232,0.2) !important;
 }
