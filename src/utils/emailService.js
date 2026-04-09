@@ -22,10 +22,14 @@ export async function sendBookingEmail({ nombre, email, telefono, servicio, fech
   };
 
   try {
-    // Enviar ambos emails en paralelo
+    // Email a la clínica
+    const clinicParams = { ...params, to_email: CLINIC_EMAIL };
+    // Email al cliente — to_email apunta al correo del cliente
+    const clientParams = { ...params, to_email: email, client_email: email };
+
     const [clinicRes, clientRes] = await Promise.all([
-      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, params, { publicKey: PUBLIC_KEY }),
-      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, params, { publicKey: PUBLIC_KEY }),
+      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, clinicParams, { publicKey: PUBLIC_KEY }),
+      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, clientParams, { publicKey: PUBLIC_KEY }),
     ]);
     return { success: true, clinicRes, clientRes };
   } catch (error) {
