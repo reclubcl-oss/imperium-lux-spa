@@ -174,7 +174,7 @@ function Dashboard({ onLogout }) {
   return (
     <div style={{ minHeight: '100vh', background: '#0A0A0A', paddingTop: '0' }}>
       {/* Top bar */}
-      <div style={{ background: '#0D0D0D', borderBottom: '1px solid rgba(201,168,76,0.12)', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px' }}>
+      <div style={{ background: '#0D0D0D', borderBottom: '1px solid rgba(201,168,76,0.12)', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: '1.1rem', fontWeight: 700 }}>IMPERIUM</span>
           <span style={{ color: 'rgba(201,168,76,0.3)', fontSize: '1rem' }}>|</span>
@@ -191,7 +191,7 @@ function Dashboard({ onLogout }) {
         </div>
       </div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'clamp(20px,4vw,32px) clamp(12px,3vw,24px)' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontFamily: 'Playfair Display, serif', color: '#F5F0E8', fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '4px' }}>Dashboard de Reservas</h1>
@@ -216,7 +216,7 @@ function Dashboard({ onLogout }) {
         {!loading && (
           <>
             {/* Stat cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,160px),1fr))', gap: '12px', marginBottom: '20px' }}>
               <StatCard icon="📅" label="RESERVAS ESTE MES"   value={thisMonthReservations.length} sub={`de ${reservations.length} en total`} />
               <StatCard icon="✨" label="RESERVAS HOY"        value={todayReservations.length}      sub="nuevas citas" />
               <StatCard icon="💎" label="TOTAL RESERVAS"      value={reservations.length}           sub="desde el inicio" />
@@ -224,7 +224,7 @@ function Dashboard({ onLogout }) {
             </div>
 
             {/* Charts + filters row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: '16px', marginBottom: '20px' }}>
               <TopServices reservations={reservations} />
 
               {/* Filters */}
@@ -268,51 +268,73 @@ function Dashboard({ onLogout }) {
               </div>
 
               {filtered.length === 0 ? (
-                <div style={{ padding: '48px', textAlign: 'center', color: 'rgba(245,240,232,0.3)', fontFamily: 'Raleway, sans-serif', fontSize: '0.9rem' }}>
+                <div style={{ padding: '40px 16px', textAlign: 'center', color: 'rgba(245,240,232,0.3)', fontFamily: 'Raleway, sans-serif', fontSize: '0.88rem' }}>
                   {reservations.length === 0 ? 'Aún no hay reservas registradas.' : 'No hay resultados con estos filtros.'}
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
-                        {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'TELÉFONO', 'EMAIL', 'REGISTRADO'].map(h => (
-                          <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'Raleway, sans-serif', color: 'rgba(201,168,76,0.7)', fontSize: '0.65rem', letterSpacing: '0.15em', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((r, i) => (
-                        <tr key={r.id || i}
-                          style={{ borderBottom: '1px solid rgba(201,168,76,0.05)', transition: 'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.04)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <td style={tdStyle}>{r.fecha || '—'}</td>
-                          <td style={{ ...tdStyle, color: '#C9A84C', fontWeight: 600 }}>{r.hora || '—'}</td>
-                          <td style={{ ...tdStyle, color: '#F5F0E8', fontWeight: 500 }}>{r.nombre || '—'}</td>
-                          <td style={tdStyle}>
-                            <span style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontFamily: 'Raleway, sans-serif', whiteSpace: 'nowrap' }}>
-                              {r.servicio || '—'}
-                            </span>
-                          </td>
-                          <td style={tdStyle}>{r.telefono || '—'}</td>
-                          <td style={{ ...tdStyle, color: 'rgba(245,240,232,0.5)' }}>{r.email || '—'}</td>
-                          <td style={{ ...tdStyle, color: 'rgba(245,240,232,0.35)', fontSize: '0.75rem' }}>
-                            {r.created_at ? new Date(r.created_at).toLocaleDateString('es-ES') : '—'}
-                          </td>
+                <>
+                  {/* Desktop table */}
+                  <div className="admin-table-desktop" style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
+                          {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'TELÉFONO', 'EMAIL'].map(h => (
+                            <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'Raleway, sans-serif', color: 'rgba(201,168,76,0.7)', fontSize: '0.62rem', letterSpacing: '0.15em', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filtered.map((r, i) => (
+                          <tr key={r.id || i} style={{ borderBottom: '1px solid rgba(201,168,76,0.05)', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.04)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <td style={tdStyle}>{r.fecha || '—'}</td>
+                            <td style={{ ...tdStyle, color: '#C9A84C', fontWeight: 700 }}>{r.hora || '—'}</td>
+                            <td style={{ ...tdStyle, color: '#F5F0E8', fontWeight: 500 }}>{r.nombre || '—'}</td>
+                            <td style={tdStyle}>
+                              <span style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', padding: '3px 8px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'Raleway, sans-serif', whiteSpace: 'nowrap' }}>
+                                {r.servicio || '—'}
+                              </span>
+                            </td>
+                            <td style={tdStyle}>{r.telefono || '—'}</td>
+                            <td style={{ ...tdStyle, color: 'rgba(245,240,232,0.5)' }}>{r.email || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className="admin-cards-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                    {filtered.map((r, i) => (
+                      <div key={r.id || i} style={{ padding: '16px', borderBottom: '1px solid rgba(201,168,76,0.07)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <p style={{ fontFamily: 'Raleway, sans-serif', color: '#F5F0E8', fontWeight: 600, fontSize: '0.9rem' }}>{r.nombre || '—'}</p>
+                          <span style={{ fontFamily: 'Raleway, sans-serif', color: '#C9A84C', fontWeight: 700, fontSize: '0.9rem' }}>{r.hora || '—'}</span>
+                        </div>
+                        <span style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', padding: '3px 10px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'Raleway, sans-serif', display: 'inline-block', marginBottom: '8px' }}>
+                          {r.servicio || '—'}
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>📅 {r.fecha || '—'}</p>
+                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>📞 {r.telefono || '—'}</p>
+                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>✉️ {r.email || '—'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </>
         )}
       </div>
 
-      <style>{`select option { background: #1a1a1a; color: #F5F0E8; }`}</style>
+      <style>{`
+        select option { background: #1a1a1a; color: #F5F0E8; }
+        @media (min-width: 640px) { .admin-cards-mobile { display: none !important; } }
+        @media (max-width: 639px) { .admin-table-desktop { display: none !important; } }
+      `}</style>
     </div>
   );
 }
