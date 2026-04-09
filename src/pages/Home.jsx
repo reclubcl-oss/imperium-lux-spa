@@ -1,5 +1,6 @@
 import Hero from '../components/Hero';
 import Services from '../components/Services';
+import VideoSection from '../components/VideoSection';
 
 const stats = [
   { number: '500+', label: 'Clientes Satisfechos' },
@@ -25,6 +26,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <VideoSection />
 
       {/* About section */}
       <section id="nosotros" style={{ background: '#111111', padding: '100px 24px' }}>
