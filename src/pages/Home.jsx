@@ -1,6 +1,7 @@
 import Hero from '../components/Hero';
 import Services from '../components/Services';
 import VideoSection from '../components/VideoSection';
+import Location from '../components/Location';
 
 const stats = [
   { number: '500+', label: 'Clientes Satisfechos' },
@@ -51,6 +52,8 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <Location />
     </>
   );
 }

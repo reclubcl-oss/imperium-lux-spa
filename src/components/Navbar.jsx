@@ -9,6 +9,7 @@ export default function Navbar() {
     { label: 'Inicio', to: '/' },
     { label: 'Servicios', to: '/#servicios' },
     { label: 'Nosotros', to: '/#nosotros' },
+    { label: 'Ubicación', to: '/#ubicacion' },
     { label: 'Contacto', to: '/#contacto' },
   ];
 
