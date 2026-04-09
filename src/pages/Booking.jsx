@@ -85,8 +85,28 @@ export default function Booking() {
 
     if (!dbResult.success) console.warn('Supabase warning:', dbResult.error);
 
-    if (emailResult.success) { setErrorMsg(''); setStatus('success'); }
-    else { setErrorMsg(emailResult.error || 'Error desconocido'); setStatus('error'); }
+    if (emailResult.success) {
+      setErrorMsg('');
+      setStatus('success');
+
+      // Zapier webhook — no bloquea ni afecta la confirmación si falla
+      fetch('https://hooks.zapier.com/hooks/catch/27149964/u7iu435/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre:   payload.nombre,
+          email:    payload.email,
+          telefono: payload.telefono,
+          servicio: payload.servicio,
+          fecha:    payload.fecha,
+          hora:     payload.hora,
+        }),
+      }).catch(err => console.warn('Zapier webhook error:', err));
+
+    } else {
+      setErrorMsg(emailResult.error || 'Error desconocido');
+      setStatus('error');
+    }
   };
 
   // ── Success screen ──────────────────────────────────────────────────────────
