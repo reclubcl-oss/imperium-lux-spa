@@ -22,10 +22,18 @@ export async function sendBookingEmail({ nombre, email, telefono, servicio, fech
   };
 
   try {
-    // Email a la clínica
     const clinicParams = { ...params, to_email: CLINIC_EMAIL };
-    // Email al cliente — to_email apunta al correo del cliente
-    const clientParams = { ...params, to_email: email, client_email: email };
+
+    // Para el cliente: pasamos el email en TODAS las variables posibles
+    // para que funcione sin importar cómo esté configurado el template
+    const clientParams = {
+      ...params,
+      to_email:     email,
+      to:           email,
+      client_email: email,
+      email:        email,
+      recipient:    email,
+    };
 
     const [clinicRes, clientRes] = await Promise.all([
       emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, clinicParams, { publicKey: PUBLIC_KEY }),
