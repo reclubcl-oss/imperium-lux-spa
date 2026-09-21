@@ -8,6 +8,7 @@ import { toLocalISODate, resolveStaffForSlot } from '../utils/schedule';
 import { getActiveServices } from '../utils/services';
 import { googleCalendarUrl, downloadICS } from '../utils/calendarLink';
 import { trackBookingConfirmed } from '../utils/analytics';
+import ReminderOptIn from '../components/ReminderOptIn';
 
 // ── Sparkles de confirmación ────────────────────────────────────────────────
 function GoldSparkles() {
@@ -268,8 +269,11 @@ export default function Booking() {
           ) : (
             <p style={{ color: 'var(--ink-soft)', fontSize: 'clamp(0.75rem,2vw,0.85rem)', marginBottom: '20px', fontFamily: 'var(--font-sans)' }}>
               Confirmación enviada a <strong style={{ color: 'var(--ink)' }}>{form.email}</strong>
+              {import.meta.env.VITE_REMINDERS === 'on' && <><br />Te enviaremos un recordatorio el día antes de tu cita.</>}
             </p>
           )}
+
+          <ReminderOptIn email={form.email} />
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
             <a

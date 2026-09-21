@@ -16,6 +16,8 @@ function rateLimited(ip) {
   return recent.length > RATE_MAX;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -30,7 +32,7 @@ export default async function handler(req, res) {
   }
 
   const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-  const { action, endpoint, subscription } = req.body || {};
+  const { action, endpoint, subscription, email } = req.body || {};
 
   if (action === 'unsubscribe') {
     if (typeof endpoint !== 'string' || !endpoint) {
@@ -52,8 +54,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'Suscripción inválida' });
   }
 
+  // El correo es opcional: si viene (desde la pantalla de reserva confirmada),
+  // se usa para avisarle a ese teléfono su recordatorio de cita.
+  const cleanEmail = typeof email === 'string' && EMAIL_RE.test(email.trim()) && email.length <= 160 ? email.trim().toLowerCase() : null;
+
   const { error } = await supabaseAdmin.from('push_subscriptions').upsert(
-    { endpoint: ep, p256dh, auth, user_agent: String(req.headers['user-agent'] || '').slice(0, 250) },
+    { endpoint: ep, p256dh, auth, user_agent: String(req.headers['user-agent'] || '').slice(0, 250), ...(cleanEmail ? { email: cleanEmail } : {}) },
     { onConflict: 'endpoint' }
   );
   if (error) return res.status(400).json({ success: false, error: error.message });

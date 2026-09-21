@@ -75,7 +75,7 @@ export async function getCurrentSubscription() {
 }
 
 /** Pide permiso, se suscribe y guarda la suscripción en el servidor. Debe llamarse desde un toque del usuario. */
-export async function enablePush() {
+export async function enablePush({ email } = {}) {
   if (!pushSupported()) return { success: false, error: 'unsupported' };
   if (!VAPID_PUBLIC_KEY) return { success: false, error: 'not_configured' };
 
@@ -90,7 +90,7 @@ export async function enablePush() {
     const res = await fetch('/api/push-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: subscription.toJSON() }),
+      body: JSON.stringify({ subscription: subscription.toJSON(), email }),
     });
     const json = await res.json();
     if (!res.ok || !json.success) return { success: false, error: json.error || 'server' };

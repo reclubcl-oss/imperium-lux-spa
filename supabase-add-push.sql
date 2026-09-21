@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   p256dh      TEXT NOT NULL,
   auth        TEXT NOT NULL,
   user_agent  TEXT,
+  email       TEXT,       -- se llena al activar el recordatorio desde una reserva
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
