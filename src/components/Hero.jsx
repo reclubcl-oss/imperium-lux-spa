@@ -9,35 +9,68 @@ const heroPoster = '/hero-poster.webp';
 // la imagen se muestra al instante y el video empieza a bajar recién cuando la
 // página terminó de cargar — y solo si la conexión lo permite (no con ahorro de
 // datos, ni en 2G/3G, ni si la persona pidió menos movimiento).
+// Sin autoplay con ahorro de datos, 2G/3G o "reducir movimiento": ahí el video
+// solo arranca si la persona toca el botón de play.
+function skipAutoplay() {
+  const conn = navigator.connection;
+  const slow = conn && (conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || ''));
+  return !!slow || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function HeroVideo() {
-  const ref = useRef(null);
+  const videoRef = useRef(null);
+  const imgRef = useRef(null);
+  const started = useRef(false);
   const [playing, setPlaying] = useState(false);
+  const [needsTap, setNeedsTap] = useState(skipAutoplay);
+
+  // Arranca el video (muteado, sin sonido). Si el navegador lo bloquea —por
+  // ejemplo el modo de bajo consumo del iPhone— queda la foto con un botón de
+  // play para que la persona lo inicie con un toque.
+  const start = () => {
+    const video = videoRef.current;
+    if (!video || started.current) return;
+    started.current = true;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.src = '/imperium-hero.mp4';
+    video.load();
+    video.play().catch(() => setNeedsTap(true));
+  };
 
   useEffect(() => {
-    const video = ref.current;
-    const conn = navigator.connection;
-    const slow = conn && (conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || ''));
-    if (!video || slow || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (skipAutoplay()) return;
 
-    let cancelled = false;
-    const start = () => {
-      if (cancelled) return;
-      video.src = '/imperium-hero.mp4';
-      video.play().catch(() => {});
-    };
-    const schedule = () => setTimeout(start, 800);
-    let timer;
-    if (document.readyState === 'complete') timer = schedule();
-    else window.addEventListener('load', () => { timer = schedule(); }, { once: true });
-    return () => { cancelled = true; clearTimeout(timer); };
+    // Espera solo a que la foto de portada esté lista (no a que termine de cargar
+    // toda la página, que con el mapa puede tardar varios segundos).
+    const timers = [];
+    const img = imgRef.current;
+    if (img?.complete) timers.push(setTimeout(start, 400));
+    else img?.addEventListener('load', () => timers.push(setTimeout(start, 400)), { once: true });
+    timers.push(setTimeout(start, 3500)); // por si la imagen tarda demasiado
+    return () => timers.forEach(clearTimeout);
   }, []);
 
+  const playNow = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (!started.current) { start(); return; }
+    video.muted = true;
+    video.play().then(() => setNeedsTap(false)).catch(() => {});
+  };
+
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)' }}>
-      <img src={heroPoster} alt="Clínica Estética Imperium" width="720" height="1280" fetchPriority="high" decoding="async"
+    <div onClick={playNow} style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', cursor: playing ? 'default' : 'pointer' }}>
+      <img ref={imgRef} src={heroPoster} alt="Clínica Estética Imperium" width="720" height="1280" fetchPriority="high" decoding="async"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-      <video ref={ref} muted loop playsInline preload="none" onPlaying={() => setPlaying(true)} aria-label="Video de Clínica Estética Imperium"
+      <video ref={videoRef} muted loop playsInline preload="none" onPlaying={() => { setPlaying(true); setNeedsTap(false); }} aria-label="Video de Clínica Estética Imperium"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: playing ? 1 : 0, transition: 'opacity 0.6s ease' }} />
+      {needsTap && !playing && (
+        <button type="button" onClick={e => { e.stopPropagation(); playNow(); }} aria-label="Reproducir video"
+          style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '64px', height: '64px', borderRadius: '50%', border: 'none', background: 'rgba(255,254,251,0.92)', boxShadow: '0 8px 24px rgba(23,27,22,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--olive)" style={{ marginLeft: '3px' }}><path d="M8 5v14l11-7z" /></svg>
+        </button>
+      )}
     </div>
   );
 }
