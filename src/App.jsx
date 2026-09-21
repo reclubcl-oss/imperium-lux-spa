@@ -8,6 +8,7 @@ import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
 import Privacidad from './pages/Privacidad';
 import Cita from './pages/Cita';
+import StandalonePrompt from './components/StandalonePrompt';
 import LinkHub from './pages/LinkHub';
 
 // El panel admin y la intranet solo los usa el equipo — no tiene sentido
@@ -85,6 +86,7 @@ function Layout() {
         </Suspense>
       </main>
       {!isBare && <Footer />}
+      {!isBare && <StandalonePrompt />}
     </>
   );
 }
