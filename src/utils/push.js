@@ -113,3 +113,15 @@ export async function disablePush() {
   }).catch(() => {});
   return { success: true };
 }
+
+/** SOLO PARA PRUEBAS: se suscribe sin guardar nada en el servidor y devuelve la suscripción. */
+export async function subscribeWithoutSaving() {
+  if (!pushSupported()) return { success: false, error: 'unsupported' };
+  if (!VAPID_PUBLIC_KEY) return { success: false, error: 'not_configured' };
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') return { success: false, error: permission };
+  const reg = await navigator.serviceWorker.ready;
+  const subscription = (await reg.pushManager.getSubscription())
+    || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) });
+  return { success: true, subscription: subscription.toJSON() };
+}

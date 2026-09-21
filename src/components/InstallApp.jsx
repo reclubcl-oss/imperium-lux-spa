@@ -94,6 +94,7 @@ function Panel({ onClose }) {
     body = (
       <>
         <p style={{ ...text, marginBottom: '16px' }}>✓ Ya estás usando la app de Imperium.</p>
+        <a href="/prueba-push" style={{ ...text, display: 'block', marginBottom: '16px', color: 'var(--olive)', textDecoration: 'underline' }}>Prueba de notificaciones (temporal)</a>
         {canPush ? <NotificationToggle /> : <p style={text}>Tu teléfono no permite notificaciones. Actualiza iOS a la versión 16.4 o superior.</p>}
       </>
     );
