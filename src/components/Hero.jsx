@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import heroPoster from '../assets/brand/hero-poster.webp';
+// Va en public/ (URL fija) para poder precargarla desde index.html: es el elemento
+// más grande de la portada y así arranca a bajar antes de que cargue el JavaScript.
+const heroPoster = '/hero-poster.webp';
 
 // El video de portada pesa varios MB: si se descargara junto con la página, en
 // celular retrasaba todo lo demás (la foto principal aparecía a los ~12 s). Ahora

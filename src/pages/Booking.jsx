@@ -455,7 +455,7 @@ export default function Booking() {
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', lineHeight: 1.6 }}>
                 <input type="checkbox" checked={promos} onChange={e => setPromos(e.target.checked)}
                   style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: 'var(--olive)', flexShrink: 0 }} />
-                <span>Quiero recibir promociones y novedades por correo <span style={{ opacity: 0.7 }}>(opcional, puedes darte de baja cuando quieras)</span>.</span>
+                <span>Quiero recibir promociones y novedades por correo <span>(opcional, puedes darte de baja cuando quieras)</span>.</span>
               </label>
 
               {/* Error */}
