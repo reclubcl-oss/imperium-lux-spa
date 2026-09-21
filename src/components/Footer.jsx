@@ -57,7 +57,7 @@ export default function Footer() {
               {[
                 { icon: '📍', text: '2 Oriente 124, Viña del Mar' },
                 { icon: '📞', text: '+56 9 7149 4060' },
-                { icon: '✉️', text: 'contacto@imperiumluxspa.com' },
+                { icon: '✉️', text: 'clinicaimperiumvina@gmail.com' },
                 { icon: '🕐', text: 'Lun–Vie 9:00–20:00 · Sáb 9:00–18:00' },
               ].map(({ icon, text }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
