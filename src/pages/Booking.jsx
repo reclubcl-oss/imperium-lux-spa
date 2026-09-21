@@ -4,11 +4,12 @@ import BookingCalendar from '../components/BookingCalendar';
 import TreatmentSelect from '../components/TreatmentSelect';
 import { sendBookingEmail } from '../utils/emailService';
 import { saveReservation } from '../utils/supabase';
-import { toLocalISODate, resolveStaffForSlot } from '../utils/schedule';
+import { toLocalISODate, resolveStaffForSlot, formatDateES } from '../utils/schedule';
 import { getActiveServices } from '../utils/services';
 import { googleCalendarUrl, downloadICS } from '../utils/calendarLink';
 import { trackBookingConfirmed } from '../utils/analytics';
 import ReminderOptIn from '../components/ReminderOptIn';
+import { reportError } from '../utils/reportError';
 
 // ── Sparkles de confirmación ────────────────────────────────────────────────
 function GoldSparkles() {
@@ -100,11 +101,6 @@ function GoldSparkles() {
 }
 
 
-function formatDateES(date) {
-  if (!date) return '';
-  return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-}
-
 const inputStyle = {
   width: '100%',
   background: '#FFFFFF',
@@ -139,6 +135,7 @@ export default function Booking() {
   const [selection, setSelection] = useState({ date: null, time: null });
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', servicio: searchParams.get('servicio') || '', notas: '' });
   const [accepted, setAccepted] = useState(false);
+  const [manageUrl, setManageUrl] = useState(null);
   const [promos, setPromos] = useState(false);
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -194,10 +191,9 @@ export default function Booking() {
       aceptaPromos: promos,
     };
 
-    const [emailResult, dbResult] = await Promise.all([
-      sendBookingEmail({ ...payload, staffEmail: assigned.staffEmail, staffNombre: assigned.staffNombre }),
-      saveReservation(payload),
-    ]);
+    // Primero se guarda; los correos van después para saber si el servidor ya le
+    // mandó la confirmación (con el enlace para cambiar/cancelar) a la clienta.
+    const dbResult = await saveReservation(payload);
 
     // La reserva es lo único que de verdad importa (queda agendada en el sistema);
     // el email es solo una notificación de cortesía. Si Supabase falló, la cita
@@ -206,15 +202,24 @@ export default function Booking() {
     // no quedó agendado y puede reservar dos veces, o llamar a preguntar).
     if (!dbResult.success) {
       console.error('Reservation save failed:', dbResult.error);
+      // Un horario ocupado no es una falla del sitio; cualquier otra sí se avisa.
+      if (!/ocup/i.test(dbResult.error || '')) reportError('reservas', dbResult.error);
       setErrorMsg(dbResult.error || 'No pudimos guardar tu reserva. Por favor intenta de nuevo o contáctanos directamente.');
       setStatus('error');
       return;
     }
 
+    const emailResult = await sendBookingEmail({
+      ...payload, staffEmail: assigned.staffEmail, staffNombre: assigned.staffNombre,
+      manageUrl: dbResult.manageUrl, skipClient: dbResult.clientEmailSent,
+    });
+
     if (!emailResult.success) console.warn('Email de confirmación no se pudo enviar:', emailResult.error);
 
     setErrorMsg('');
-    setEmailFailed(!emailResult.success);
+    setManageUrl(dbResult.manageUrl);
+    // La clienta recibió su confirmación si salió por Gmail (servidor) o por EmailJS.
+    setEmailFailed(!emailResult.success && !dbResult.clientEmailSent);
     window.scrollTo({ top: 0, behavior: 'instant' });
     setStatus('success');
 
@@ -275,11 +280,23 @@ export default function Booking() {
             </p>
           )}
 
+          {manageUrl && (
+            <div style={{ background: 'var(--cream-soft)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px', marginBottom: '22px', textAlign: 'left' }}>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.82rem', fontWeight: 600, marginBottom: '4px' }}>¿Necesitas cambiar tu hora?</p>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', lineHeight: 1.6, marginBottom: '10px' }}>
+                Puedes cambiarla o cancelarla tú misma hasta 24 horas antes. Guarda este enlace.
+              </p>
+              <a href={manageUrl} style={{ display: 'inline-block', background: 'transparent', border: '1px solid var(--olive)', color: 'var(--olive)', padding: '9px 16px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none' }}>
+                Cambiar o cancelar mi cita
+              </a>
+            </div>
+          )}
+
           <ReminderOptIn email={form.email} />
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
             <a
-              href={googleCalendarUrl({ servicio: form.servicio, date: selection.date, time: selection.time })}
+              href={googleCalendarUrl({ servicio: form.servicio, date: selection.date, time: selection.time, manageUrl })}
               target="_blank" rel="noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)', padding: '10px 16px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: 'clamp(0.72rem,2vw,0.78rem)', fontFamily: 'var(--font-sans)' }}
             >
@@ -288,7 +305,7 @@ export default function Booking() {
             </a>
             <button
               type="button"
-              onClick={() => downloadICS({ servicio: form.servicio, date: selection.date, time: selection.time })}
+              onClick={() => downloadICS({ servicio: form.servicio, date: selection.date, time: selection.time, manageUrl })}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)', padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: 'clamp(0.72rem,2vw,0.78rem)', fontFamily: 'var(--font-sans)', cursor: 'pointer' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--olive)" strokeWidth="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16" /></svg>

@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
 import { CLINIC, esc } from './_lib/clinic.js';
+import { alertAdmins } from './_lib/alert.js';
+import { manageUrlFor } from './_lib/mail.js';
 
 // Recordatorios de cita. Lo ejecuta Vercel Cron una vez al día (vercel.json,
 // 13:00 UTC = 9–10 AM en Chile) y avisa a quienes tienen cita MAÑANA, por
@@ -29,6 +31,7 @@ function tomorrowInSantiago() {
 
 
 function emailContent(r) {
+  const manage = manageUrlFor(r.cancel_token);
   const subject = `Recordatorio: tu cita es mañana a las ${r.hora} · ${CLINIC.nombre}`;
   const text = [
     `Hola ${r.nombre},`,
@@ -37,7 +40,7 @@ function emailContent(r) {
     `${r.fecha} a las ${r.hora} — ${r.servicio}`,
     `Dirección: ${CLINIC.direccion}`,
     '',
-    `¿Necesitas cambiarla? Escríbenos por WhatsApp al ${CLINIC.telefono}: ${CLINIC.whatsapp}`,
+    manage ? `¿Necesitas cambiarla o cancelarla? Hazlo aquí: ${manage}` : `¿Necesitas cambiarla? Escríbenos por WhatsApp al ${CLINIC.telefono}: ${CLINIC.whatsapp}`,
     '',
     'Te esperamos.',
   ].join('\n');
@@ -53,7 +56,7 @@ function emailContent(r) {
     </div>
     <p style="font:14px/1.7 -apple-system,Segoe UI,Arial,sans-serif;color:#5b6357;margin:0 0 6px">📍 ${esc(CLINIC.direccion)}</p>
     <p style="font:14px/1.7 -apple-system,Segoe UI,Arial,sans-serif;color:#5b6357;margin:0 0 18px">¿Necesitas cambiar tu hora? Escríbenos por WhatsApp.</p>
-    <a href="${CLINIC.whatsapp}" style="display:inline-block;background:#263A22;color:#FFFEFB;text-decoration:none;padding:12px 22px;border-radius:8px;font:700 13px -apple-system,Segoe UI,Arial,sans-serif">Escribir por WhatsApp</a>
+    <a href="${manage || CLINIC.whatsapp}" style="display:inline-block;background:#263A22;color:#FFFEFB;text-decoration:none;padding:12px 22px;border-radius:8px;font:700 13px -apple-system,Segoe UI,Arial,sans-serif">${manage ? 'Cambiar o cancelar mi cita' : 'Escribir por WhatsApp'}</a>
   </div>
   <p style="text-align:center;font:12px -apple-system,Segoe UI,Arial,sans-serif;color:#8a8f84;margin:14px 0 0">${esc(CLINIC.nombre)}</p>
 </div>`;
@@ -73,11 +76,10 @@ export default async function handler(req, res) {
   const date = tomorrowInSantiago();
   const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-  const { data: reservas, error } = await supabaseAdmin
-    .from('reservas')
-    .select('id, nombre, email, servicio, fecha, hora')
-    .eq('fecha_iso', date)
-    .is('recordatorio_enviado_at', null);
+  const load = (cols) => supabaseAdmin.from('reservas').select(cols).eq('fecha_iso', date).is('recordatorio_enviado_at', null);
+  let { data: reservas, error } = await load('id, nombre, email, servicio, fecha, hora, cancel_token');
+  // Si aún no se corrió supabase-add-gestion-citas.sql, envía igual (sin el enlace de cambio).
+  if (error?.code === '42703') ({ data: reservas, error } = await load('id, nombre, email, servicio, fecha, hora'));
   if (error) return res.status(400).json({ success: false, error: error.message });
 
   const emailReady = !!(GMAIL_USER && GMAIL_APP_PASSWORD);
@@ -134,6 +136,15 @@ export default async function handler(req, res) {
     } else {
       summary.noChannel++;
     }
+  }
+
+  // Si algo falló al enviar, avisa a las administradoras (correo y/o push).
+  if (summary.errors || summary.noChannel) {
+    await alertAdmins(supabaseAdmin, {
+      title: 'Recordatorios con problemas',
+      body: `${summary.emailed + summary.pushed} enviados, ${summary.errors} errores, ${summary.noChannel} sin canal de aviso (${date}).`,
+      tag: 'recordatorios',
+    });
   }
 
   return res.status(200).json(summary);

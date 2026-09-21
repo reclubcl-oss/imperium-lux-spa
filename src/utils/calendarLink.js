@@ -17,20 +17,20 @@ function eventRange(date, time) {
 }
 
 /** Link "Agregar a Google Calendar" — se abre en una pestaña nueva, no requiere login previo. */
-export function googleCalendarUrl({ servicio, date, time }) {
+export function googleCalendarUrl({ servicio, date, time, manageUrl }) {
   const { start, end } = eventRange(date, time);
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: `Cita en Clínica Estética Imperium — ${servicio}`,
     dates: `${formatLocal(start)}/${formatLocal(end)}`,
-    details: `Tratamiento: ${servicio}. Te esperamos en Clínica Estética Imperium.`,
+    details: `Tratamiento: ${servicio}. Te esperamos en Clínica Estética Imperium.${manageUrl ? ` Cambiar o cancelar: ${manageUrl}` : ''}`,
     location: CLINIC_ADDRESS,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
 /** Descarga un .ics — sirve para Apple Calendar, Outlook y la mayoría de apps de calendario. */
-export function downloadICS({ servicio, date, time }) {
+export function downloadICS({ servicio, date, time, manageUrl }) {
   const { start, end } = eventRange(date, time);
   const ics = [
     'BEGIN:VCALENDAR',
@@ -42,7 +42,7 @@ export function downloadICS({ servicio, date, time }) {
     `DTSTART:${formatLocal(start)}`,
     `DTEND:${formatLocal(end)}`,
     `SUMMARY:Cita en Clínica Estética Imperium — ${servicio}`,
-    `DESCRIPTION:Tratamiento: ${servicio}. Te esperamos en Clínica Estética Imperium.`,
+    `DESCRIPTION:Tratamiento: ${servicio}. Te esperamos en Clínica Estética Imperium.${manageUrl ? ` Cambiar o cancelar: ${manageUrl}` : ''}`,
     `LOCATION:${CLINIC_ADDRESS}`,
     'END:VEVENT',
     'END:VCALENDAR',

@@ -1,4 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import { CLINIC } from './_lib/clinic.js';
+import { alertAdmins } from './_lib/alert.js';
+import { brandedEmail, sendMailSafe, gmailConfigured, manageUrlFor } from './_lib/mail.js';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -85,24 +88,43 @@ export default async function handler(req, res) {
     if (error.code === '23505') {
       return res.status(409).json({ success: false, error: 'Ese horario se acaba de ocupar. Por favor elige otro.' });
     }
+    await alertAdmins(supabaseAdmin, { title: 'Error al guardar una reserva', body: String(error.message).slice(0, 180), tag: 'error-reserva', dedupeMs: 5 * 60 * 1000 });
     return res.status(400).json({ success: false, error: error.message });
   }
 
-  // Aviso a Zapier desde el servidor (la URL del webhook ya no viaja al
-  // navegador). Se espera con un tope de 3s porque una función serverless
-  // puede congelarse apenas responde; si falla, no afecta la reserva.
-  if (ZAPIER_WEBHOOK_URL) {
-    try {
-      await fetch(ZAPIER_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, email, telefono, servicio, fecha, hora }),
-        signal: AbortSignal.timeout(3000),
-      });
-    } catch (err) {
-      console.warn('Zapier webhook error:', err.message);
-    }
-  }
+  const created = data?.[0];
+  const manageUrl = manageUrlFor(created?.cancel_token);
 
-  return res.status(200).json({ success: true, data });
+  // Avisos posteriores a la reserva, todos en paralelo y sin poder romperla:
+  // Zapier (la URL del webhook ya no viaja al navegador), correo de confirmación
+  // a la clienta (solo si Gmail está configurado) y alerta a las administradoras.
+  let clientEmailSent = false;
+  await Promise.allSettled([
+    ZAPIER_WEBHOOK_URL
+      ? fetch(ZAPIER_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, telefono, servicio, fecha, hora }),
+          signal: AbortSignal.timeout(3000),
+        }).catch(err => console.warn('Zapier webhook error:', err.message))
+      : null,
+    (async () => {
+      if (!gmailConfigured()) return;
+      const { html, text } = brandedEmail({
+        eyebrow: 'RESERVA CONFIRMADA',
+        title: `Hola ${String(nombre).split(' ')[0]}, tu cita quedó agendada`,
+        rows: [['Fecha', fecha], ['Hora', `${hora} hrs`], ['Tratamiento', servicio]],
+        note: manageUrl
+          ? 'Si necesitas cambiar la hora o cancelar, puedes hacerlo tú misma hasta 24 horas antes con el botón de abajo.'
+          : `Para cambios escríbenos por WhatsApp al ${CLINIC.telefono}.`,
+        ctaLabel: 'Cambiar o cancelar mi cita',
+        ctaUrl: manageUrl,
+      });
+      clientEmailSent = await sendMailSafe({ to: email, subject: `Reserva confirmada · ${CLINIC.nombre}`, html, text });
+    })(),
+    alertAdmins(supabaseAdmin, { title: 'Nueva reserva', body: `${nombre} · ${servicio} · ${fecha}, ${hora}`, tag: 'reserva' }),
+  ]);
+
+  const safeData = (data || []).map(({ cancel_token, ...rest }) => rest); // eslint-disable-line no-unused-vars
+  return res.status(200).json({ success: true, data: safeData, manageUrl, clientEmailSent });
 }

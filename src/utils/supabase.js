@@ -25,7 +25,7 @@ export async function saveReservation({ nombre, email, telefono, servicio, fecha
       console.error('Reservation error:', json.error);
       return { success: false, error: json.error || `Error ${res.status}` };
     }
-    return { success: true, data: json.data };
+    return { success: true, data: json.data, manageUrl: json.manageUrl || null, clientEmailSent: !!json.clientEmailSent };
   } catch (err) {
     console.error('Reservation error:', err);
     return { success: false, error: err.message };

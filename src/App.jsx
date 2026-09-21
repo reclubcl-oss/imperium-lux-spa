@@ -7,6 +7,7 @@ import Booking from './pages/Booking';
 import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
 import Privacidad from './pages/Privacidad';
+import Cita from './pages/Cita';
 import LinkHub from './pages/LinkHub';
 
 // El panel admin y la intranet solo los usa el equipo — no tiene sentido
@@ -22,6 +23,7 @@ const PAGE_TITLES = {
   '/fidelidad': 'Club de Fidelidad | Clínica Estética Imperium',
   '/creditos': 'Créditos | Clínica Estética Imperium',
   '/privacidad': 'Política de Privacidad | Clínica Estética Imperium',
+  '/cita': 'Tu cita | Clínica Estética Imperium',
   '/link':     'Clínica Estética Imperium',
   '/admin':    'Admin | Clínica Estética Imperium',
   '/intranet': 'Intranet | Clínica Estética Imperium',
@@ -71,6 +73,7 @@ function Layout() {
           <Route path="/fidelidad" element={<Loyalty />} />
           <Route path="/creditos" element={<Creditos />} />
           <Route path="/privacidad" element={<Privacidad />} />
+          <Route path="/cita" element={<Cita />} />
           <Route path="/link" element={<LinkHub />} />
         </Routes>
         </Suspense>

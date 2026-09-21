@@ -12,6 +12,12 @@ export function toLocalISODate(date) {
   return `${y}-${m}-${d}`;
 }
 
+/** "miércoles, 16 de septiembre de 2026" */
+export function formatDateES(date) {
+  if (!date) return '';
+  return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 function toMinutes(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
@@ -108,6 +114,25 @@ export async function deleteException(id) {
   return { success: true };
 }
 
+// Horas ocupadas de una fecha. La tabla `reservas` no es legible para visitantes
+// (protege datos de clientas), así que se piden a /api/availability, que solo
+// devuelve profesional + hora. Se cachea 10 s: getAvailableSlotsAnyStaff() pide
+// la misma fecha una vez por profesional, y así no se repite la llamada.
+const busyCache = new Map();
+function fetchBusySlots(fechaIso) {
+  const hit = busyCache.get(fechaIso);
+  if (hit && Date.now() - hit.at < 10000) return hit.promise;
+  const promise = fetch(`/api/availability?fecha=${fechaIso}`)
+    .then(async res => {
+      const json = await res.json();
+      if (!res.ok || !json.success) return { success: false, error: json.error || 'No se pudo cargar la disponibilidad' };
+      return { success: true, data: json.busy || [] };
+    })
+    .catch(() => ({ success: false, error: 'No se pudo cargar la disponibilidad' }));
+  busyCache.set(fechaIso, { at: Date.now(), promise });
+  return promise;
+}
+
 /**
  * Calcula los horarios disponibles de un profesional para una fecha:
  * excepción del día (si existe) > horario recurrente de ese día de semana,
@@ -146,15 +171,10 @@ export async function getAvailableSlots(staffId, date) {
   const slots = generateSlotsFromBlocks(blocks);
   if (slots.length === 0) return { success: true, data: [] };
 
-  const { data: reservadas, error: resError } = await supabase
-    .from('reservas')
-    .select('hora')
-    .eq('staff_id', staffId)
-    .eq('fecha_iso', fechaIso);
+  const busy = await fetchBusySlots(fechaIso);
+  if (!busy.success) return { success: false, error: busy.error, data: [] };
 
-  if (resError) return { success: false, error: resError.message, data: [] };
-
-  const ocupadas = new Set((reservadas || []).map(r => r.hora));
+  const ocupadas = new Set(busy.data.filter(b => b.staff_id === staffId).map(b => b.hora));
   let disponibles = slots.filter(s => !ocupadas.has(s));
 
   // Si la fecha consultada es hoy, no ofrecer horas que ya pasaron.

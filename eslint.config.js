@@ -26,4 +26,7 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // Funciones serverless de Vercel (Node) y service worker: globales propios.
+  { files: ['api/**/*.js', 'setup-*.js'], languageOptions: { globals: globals.node } },
+  { files: ['public/sw.js'], languageOptions: { globals: globals.serviceworker } },
 ])

@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   }
 
   const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-  const { action, endpoint, subscription, email } = req.body || {};
+  const { action, endpoint, subscription, email, admin } = req.body || {};
 
   if (action === 'unsubscribe') {
     if (typeof endpoint !== 'string' || !endpoint) {
@@ -58,11 +58,26 @@ export default async function handler(req, res) {
   // se usa para avisarle a ese teléfono su recordatorio de cita.
   const cleanEmail = typeof email === 'string' && EMAIL_RE.test(email.trim()) && email.length <= 160 ? email.trim().toLowerCase() : null;
 
+  // Dispositivo de administradora (recibe alertas de reservas y errores): solo
+  // se acepta si quien lo pide tiene sesión de admin.
+  let isAdmin = false;
+  if (admin === true) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!accessToken) return res.status(401).json({ success: false, error: 'No autenticado' });
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !userData?.user) return res.status(401).json({ success: false, error: 'Sesión inválida' });
+    const { data: caller } = await supabaseAdmin.from('staff').select('rol').eq('auth_user_id', userData.user.id).single();
+    if (caller?.rol !== 'admin') return res.status(403).json({ success: false, error: 'No autorizado' });
+    isAdmin = true;
+  }
+
   const { error } = await supabaseAdmin.from('push_subscriptions').upsert(
-    { endpoint: ep, p256dh, auth, user_agent: String(req.headers['user-agent'] || '').slice(0, 250), ...(cleanEmail ? { email: cleanEmail } : {}) },
+    { endpoint: ep, p256dh, auth, user_agent: String(req.headers['user-agent'] || '').slice(0, 250), ...(cleanEmail ? { email: cleanEmail } : {}), ...(isAdmin ? { es_admin: true } : {}) },
     { onConflict: 'endpoint' }
   );
-  if (error) return res.status(400).json({ success: false, error: error.message });
+  if (error) {
+    return res.status(400).json({ success: false, error: error.code === '42703' ? 'Falta correr supabase-add-gestion-citas.sql en Supabase.' : error.message });
+  }
 
   return res.status(200).json({ success: true });
 }

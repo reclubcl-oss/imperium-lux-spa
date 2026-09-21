@@ -7,7 +7,7 @@ const PUBLIC_KEY           = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 export const CLINIC_EMAIL = import.meta.env.VITE_CLINIC_EMAIL || 'clinicaimperiumvina@gmail.com';
 
-export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas, staffEmail, staffNombre }) {
+export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas, staffEmail, staffNombre, manageUrl, skipClient }) {
   const params = {
     to_email:     CLINIC_EMAIL,
     client_email: email,
@@ -19,6 +19,8 @@ export async function sendBookingEmail({ nombre, email, telefono, servicio, fech
     fecha,
     hora,
     notas: notas || 'Sin notas adicionales',
+    // Para que la plantilla de EmailJS pueda mostrar el enlace (agrega {{manage_url}} en el template).
+    manage_url: manageUrl || '',
   };
 
   try {
@@ -35,9 +37,11 @@ export async function sendBookingEmail({ nombre, email, telefono, servicio, fech
       recipient:    email,
     };
 
+    // Si el servidor ya le mandó la confirmación a la clienta (Gmail, con su enlace
+    // para cambiar/cancelar), aquí solo se avisa a la clínica.
     const [clinicRes, clientRes] = await Promise.all([
       emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, clinicParams, { publicKey: PUBLIC_KEY }),
-      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, clientParams, { publicKey: PUBLIC_KEY }),
+      skipClient ? null : emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, clientParams, { publicKey: PUBLIC_KEY }),
     ]);
 
     // Notificación al profesional asignado — reutiliza el template de la clínica.

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
-import { getCurrentSubscription } from '../utils/push';
+import { getCurrentSubscription, enablePush, disablePush, pushSupported, isStandalone, detectPlatform } from '../utils/push';
+import { reportError } from '../utils/reportError';
 import ConfirmDialog from './ConfirmDialog';
 
 const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', fontFamily: 'var(--font-sans)', fontSize: '0.88rem', color: 'var(--ink)', width: '100%' };
@@ -58,6 +59,80 @@ function ChannelToggle({ checked, onChange, title, detail, disabled }) {
         <span style={small}>{detail}</span>
       </span>
     </label>
+  );
+}
+
+
+// Alertas para administradoras: este dispositivo recibe un aviso cuando entra una
+// reserva, se cancela o cambia una cita, o algo falla en el sitio.
+function AdminAlertsCard() {
+  const [state, setState] = useState('checking'); // checking | off | on | working | denied | error | ios | unsupported | migration
+  const [count, setCount] = useState(null);
+  const [testSent, setTestSent] = useState(false);
+
+  const refreshCount = () => supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }).eq('es_admin', true)
+    .then(({ count: c, error }) => { if (error?.code === '42703') setState('migration'); else setCount(c); });
+
+  useEffect(() => {
+    (async () => {
+      const { ios } = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
+      if (!pushSupported()) { setState(ios && !isStandalone() ? 'ios' : 'unsupported'); return; }
+      if (ios && !isStandalone()) { setState('ios'); return; }
+      if (Notification.permission === 'denied') { setState('denied'); }
+      else {
+        const sub = await getCurrentSubscription();
+        setState(sub && localStorage.getItem('imperium_admin_alerts') === '1' ? 'on' : 'off');
+      }
+      refreshCount();
+    })();
+  }, []);
+
+  const turnOn = async () => {
+    setState('working');
+    const { data } = await supabase.auth.getSession();
+    const res = await enablePush({ adminToken: data.session?.access_token });
+    if (res.success) { localStorage.setItem('imperium_admin_alerts', '1'); setState('on'); refreshCount(); }
+    else if (res.error === 'denied') setState('denied');
+    else if (/gestion-citas/.test(res.error || '')) setState('migration');
+    else setState(res.error === 'default' ? 'off' : 'error');
+  };
+  const turnOff = async () => { setState('working'); await disablePush(); localStorage.removeItem('imperium_admin_alerts'); setState('off'); refreshCount(); };
+  const test = () => { reportError('prueba de alertas', `Alerta de prueba ${new Date().toLocaleTimeString('es-CL')}`); setTestSent(true); setTimeout(() => setTestSent(false), 6000); };
+
+  const text = { fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: 'var(--ink-soft)', lineHeight: 1.6 };
+  const btn = { background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '11px 20px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' };
+  const ghostBtn = { ...btn, background: 'transparent', color: 'var(--ink)', border: '1px solid var(--border)' };
+
+  return (
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 18px', marginBottom: '22px' }}>
+      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--ink)', marginBottom: '4px' }}>Alertas para administradoras</p>
+      <p style={{ ...text, marginBottom: '12px' }}>
+        Recibe un aviso en este dispositivo cuando entra una reserva, alguien cancela o cambia su cita, o algo falla en el sitio.
+        {count != null && <> Hay <strong style={{ color: 'var(--ink)' }}>{count}</strong> dispositivo{count === 1 ? '' : 's'} con alertas activas.</>}
+      </p>
+      {state === 'on' ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <span style={{ ...text, color: 'var(--olive)', fontWeight: 600 }}>Activas en este dispositivo</span>
+          <button type="button" onClick={test} style={ghostBtn}>Enviar alerta de prueba</button>
+          <button type="button" onClick={turnOff} style={ghostBtn}>Desactivar</button>
+          {testSent && <span style={text}>Enviada. Debería llegar en unos segundos.</span>}
+        </div>
+      ) : state === 'off' || state === 'working' || state === 'checking' || state === 'error' ? (
+        <>
+          <button type="button" onClick={turnOn} disabled={state === 'working' || state === 'checking'} style={{ ...btn, opacity: state === 'working' ? 0.6 : 1 }}>
+            {state === 'working' ? 'Activando...' : 'Activar alertas en este dispositivo'}
+          </button>
+          {state === 'error' && <p style={{ ...text, color: '#B3413A', marginTop: '8px' }}>No se pudo activar. Intenta de nuevo.</p>}
+        </>
+      ) : (
+        <p style={{ ...text, color: state === 'denied' || state === 'migration' ? '#9A6A1F' : 'var(--ink-soft)' }}>
+          {{ denied: 'Las notificaciones están bloqueadas en este navegador. Actívalas en su configuración.',
+            ios: 'En iPhone, instala primero la app (botón "Instalar app" del sitio), ábrela desde tu pantalla de inicio y vuelve aquí.',
+            unsupported: 'Este navegador no permite notificaciones.',
+            migration: 'Falta correr supabase-add-gestion-citas.sql en Supabase.' }[state]}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -119,6 +194,8 @@ export default function AdminNotificationsView() {
       <p style={{ ...small, fontSize: '0.82rem', lineHeight: 1.7, marginBottom: '20px' }}>
         Envía novedades o promociones por <strong style={{ color: 'var(--ink)' }}>notificación al teléfono</strong> (a quienes instalaron la app y la activaron) y por <strong style={{ color: 'var(--ink)' }}>correo</strong> (solo a clientas que aceptaron recibir promociones al reservar).
       </p>
+
+      <AdminAlertsCard />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '22px' }}>
         <StatusCard big={devices ?? '—'} label="dispositivos con notificaciones" />
