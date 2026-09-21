@@ -13,12 +13,12 @@ export const supabase = isConfigured ? createClient(clean(SUPABASE_URL), clean(S
  * en el servidor) en vez de insertar directo desde el navegador con la anon key,
  * para no depender de la política RLS de INSERT público en `reservas`.
  */
-export async function saveReservation({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId }) {
+export async function saveReservation({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId, aceptaPromos }) {
   try {
     const res = await fetch('/api/create-reservation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId }),
+      body: JSON.stringify({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId, aceptaPromos }),
     });
     const json = await res.json();
     if (!res.ok || !json.success) {

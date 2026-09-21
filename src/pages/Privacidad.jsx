@@ -24,7 +24,8 @@ const SECTIONS = [
     title: '3. Para qué usamos tus datos',
     list: [
       'Agendar, confirmar y gestionar tu cita, y contactarte si hay algún cambio.',
-      'Enviarte el correo de confirmación de tu reserva.',
+      'Enviarte el correo de confirmación de tu reserva y un recordatorio el día antes de tu cita.',
+      'Enviarte promociones y novedades por correo o notificación, solo si lo aceptas expresamente (casilla opcional al reservar, o al activar las notificaciones). Puedes darte de baja cuando quieras con el enlace de cada correo, o escribiéndonos.',
       'Calcular tus visitas y beneficios en el Club de Fidelidad.',
       'Llevar el control interno de la clínica (agenda y finanzas).',
       'Entender cómo se usa el sitio para mejorarlo.',

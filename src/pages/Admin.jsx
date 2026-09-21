@@ -449,7 +449,7 @@ function Dashboard({ onLogout }) {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['enlaces', 'ENLACES'], ['diseno', 'DISEÑO'], ['avisos', 'AVISOS'], ['equipo', 'EQUIPO']].map(([key, label]) => (
+          {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['enlaces', 'ENLACES'], ['diseno', 'DISEÑO'], ['avisos', 'NOTIFICACIONES'], ['equipo', 'EQUIPO']].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)} style={{
               background: tab === key ? 'var(--border-soft)' : 'transparent',
               color: tab === key ? 'var(--olive)' : 'var(--ink-soft)',

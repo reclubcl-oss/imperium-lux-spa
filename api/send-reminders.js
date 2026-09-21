@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
+import { CLINIC, esc } from './_lib/clinic.js';
 
 // Recordatorios de cita. Lo ejecuta Vercel Cron una vez al día (vercel.json,
 // 13:00 UTC = 9–10 AM en Chile) y avisa a quienes tienen cita MAÑANA, por
@@ -17,12 +18,6 @@ const VAPID_PUBLIC = process.env.VITE_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:clinicaimperiumvina@gmail.com';
 
-const CLINIC = {
-  nombre: 'Clínica Estética Imperium',
-  direccion: '2 Oriente 124, Viña del Mar',
-  telefono: '+56 9 7149 4060',
-  whatsapp: 'https://wa.me/56971494060',
-};
 
 // "Mañana" según la hora de Chile (el servidor corre en UTC).
 function tomorrowInSantiago() {
@@ -32,7 +27,6 @@ function tomorrowInSantiago() {
   return d.toISOString().slice(0, 10);
 }
 
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 function emailContent(r) {
   const subject = `Recordatorio: tu cita es mañana a las ${r.hora} · ${CLINIC.nombre}`;

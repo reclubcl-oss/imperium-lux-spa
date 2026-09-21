@@ -139,6 +139,7 @@ export default function Booking() {
   const [selection, setSelection] = useState({ date: null, time: null });
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', servicio: searchParams.get('servicio') || '', notas: '' });
   const [accepted, setAccepted] = useState(false);
+  const [promos, setPromos] = useState(false);
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [emailFailed, setEmailFailed] = useState(false);
@@ -190,6 +191,7 @@ export default function Booking() {
       fechaIso: toLocalISODate(selection.date),
       hora: selection.time, notas: form.notas,
       staffId: assigned.staffId,
+      aceptaPromos: promos,
     };
 
     const [emailResult, dbResult] = await Promise.all([
@@ -431,6 +433,12 @@ export default function Booking() {
                   <Link to="/privacidad" target="_blank" style={{ color: 'var(--olive)', textDecoration: 'underline' }}>Política de Privacidad</Link>
                   {' '}y autorizo el uso de mis datos para gestionar mi reserva.
                 </span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', lineHeight: 1.6 }}>
+                <input type="checkbox" checked={promos} onChange={e => setPromos(e.target.checked)}
+                  style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: 'var(--olive)', flexShrink: 0 }} />
+                <span>Quiero recibir promociones y novedades por correo <span style={{ opacity: 0.7 }}>(opcional, puedes darte de baja cuando quieras)</span>.</span>
               </label>
 
               {/* Error */}

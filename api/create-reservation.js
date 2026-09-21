@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ success: false, error: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.' });
   }
 
-  const { nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId } = req.body || {};
+  const { nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId, aceptaPromos } = req.body || {};
 
   if (!nombre || !email || !telefono || !servicio || !fecha || !hora) {
     return res.status(400).json({ success: false, error: 'Faltan datos obligatorios de la reserva' });
@@ -60,17 +60,23 @@ export default async function handler(req, res) {
     .eq('nombre', servicio)
     .maybeSingle();
 
-  const { data, error } = await supabaseAdmin
-    .from('reservas')
-    .insert([{
-      nombre, email, telefono, servicio, fecha,
-      fecha_iso: fechaIso || null,
-      hora,
-      notas: notas || '',
-      staff_id: staffId || null,
-      precio: servicioRow?.precio ?? null,
-    }])
-    .select();
+  const row = {
+    nombre, email, telefono, servicio, fecha,
+    fecha_iso: fechaIso || null,
+    hora,
+    notas: notas || '',
+    staff_id: staffId || null,
+    precio: servicioRow?.precio ?? null,
+  };
+
+  // Solo se guarda el consentimiento si la clienta marcó la casilla. Si la
+  // columna acepta_promos aún no existe (falta correr supabase-add-promos.sql),
+  // la reserva se guarda igual sin ella — nunca se pierde una reserva por esto.
+  let { data, error } = await supabaseAdmin.from('reservas')
+    .insert([aceptaPromos === true ? { ...row, acepta_promos: true } : row]).select();
+  if (error?.code === '42703' && aceptaPromos === true) {
+    ({ data, error } = await supabaseAdmin.from('reservas').insert([row]).select());
+  }
 
   if (error) {
     // Choque con el índice único (staff_id, fecha_iso, hora) — dos personas
