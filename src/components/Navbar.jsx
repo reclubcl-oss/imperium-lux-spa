@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import InstallApp from './InstallApp';
 import logo from '../assets/brand/logo.png';
 
 export default function Navbar() {
@@ -78,6 +79,9 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
+          <InstallApp style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid var(--border-soft)', color: 'var(--ink)', padding: '12px 4px', fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+            📲 Instalar app
+          </InstallApp>
           <Link to="/reservar" onClick={() => setOpen(false)}
             style={{ display: 'block', marginTop: '14px', textAlign: 'center', background: 'var(--olive)', color: 'var(--cream)', padding: '14px', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>
             Reservar visita

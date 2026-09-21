@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/brand/logo.png';
+import InstallApp from './InstallApp';
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -83,6 +84,11 @@ export default function Footer() {
               <Link to="/reservar" style={{ display: 'inline-block', background: 'var(--gold-accent)', color: 'var(--forest)', padding: '12px 24px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)' }}>
                 Reservar ahora
               </Link>
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <InstallApp style={{ background: 'transparent', border: '1px solid rgba(255,254,251,0.3)', color: 'var(--cream)', padding: '11px 22px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                📲 Instalar app
+              </InstallApp>
             </div>
           </div>
         </div>
