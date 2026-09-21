@@ -24,6 +24,10 @@ function useIsMobile() {
   return mobile;
 }
 
+const moreBtn = { display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', color: 'var(--olive)', border: '1px solid var(--olive)', padding: '12px 24px', borderRadius: '99px', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s, color 0.2s', maxWidth: '100%', textAlign: 'left' };
+const moreBtnOn = (e) => { e.currentTarget.style.background = 'var(--olive)'; e.currentTarget.style.color = 'var(--cream)'; };
+const moreBtnOff = (e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--olive)'; };
+
 function PlaceholderPhoto({ nombre }) {
   return (
     <div style={{
@@ -163,11 +167,16 @@ export default function Services() {
   const activeCategory = categories.includes(filter) ? filter : categories[0];
   const filtered = services.filter(s => catOf(s) === activeCategory);
 
-  const limit = isMobile ? 6 : 8;
+  const limit = isMobile ? 4 : 8;
   const visible = expanded ? filtered : filtered.slice(0, limit);
   const hidden = filtered.length - visible.length;
 
   const pickCategory = (cat) => { setFilter(cat); setExpanded(false); };
+  const nextCategory = categories[categories.indexOf(activeCategory) + 1];
+  const goNext = () => {
+    pickCategory(nextCategory);
+    document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' });
+  };
   const collapse = () => {
     setExpanded(false);
     document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' });
@@ -239,15 +248,21 @@ export default function Services() {
               ))}
             </div>
 
-            {filtered.length > limit && (
-              <div style={{ textAlign: 'center', marginTop: '28px' }}>
-                <button type="button" onClick={expanded ? collapse : () => setExpanded(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', color: 'var(--olive)', border: '1px solid var(--olive)', padding: '12px 26px', borderRadius: '99px', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s, color 0.2s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--olive)'; e.currentTarget.style.color = 'var(--cream)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--olive)'; }}>
-                  {expanded ? 'Ver menos' : `Ver más (${hidden})`}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                </button>
+            {(filtered.length > limit || nextCategory) && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginTop: '28px' }}>
+                {filtered.length > limit && (
+                  <button type="button" onClick={expanded ? collapse : () => setExpanded(true)} style={moreBtn}
+                    onMouseEnter={moreBtnOn} onMouseLeave={moreBtnOff}>
+                    {expanded ? 'Ver menos' : `Ver más (${hidden})`}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                  </button>
+                )}
+                {nextCategory && hidden === 0 && (
+                  <button type="button" onClick={goNext} style={moreBtn} onMouseEnter={moreBtnOn} onMouseLeave={moreBtnOff}>
+                    Ver más: {nextCategory}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+                  </button>
+                )}
               </div>
             )}
           </>
