@@ -136,7 +136,7 @@ export default function AdminLinksView() {
   return (
     <div>
       <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.82rem', marginBottom: '20px', maxWidth: '560px' }}>
-        Estos son los botones que aparecen en <strong style={{ color: 'var(--ink)' }}>imperiumluxspa.com/link</strong> — la
+        Estos son los botones que aparecen en <a href="/link" target="_blank" rel="noreferrer" style={{ color: 'var(--ink)', fontWeight: 700 }}>imperium-lux-spa.vercel.app/link</a> — la
         landing para poner en la descripción de Instagram. Solo se muestran los enlaces activos, en este orden.
       </p>
 
