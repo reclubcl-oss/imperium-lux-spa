@@ -7,7 +7,7 @@ const PUBLIC_KEY           = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 export const CLINIC_EMAIL = import.meta.env.VITE_CLINIC_EMAIL || 'benjamin.tapia.r1@gmail.com';
 
-export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas }) {
+export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas, staffEmail, staffNombre }) {
   const params = {
     to_email:     CLINIC_EMAIL,
     client_email: email,
@@ -39,6 +39,15 @@ export async function sendBookingEmail({ nombre, email, telefono, servicio, fech
       emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, clinicParams, { publicKey: PUBLIC_KEY }),
       emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, clientParams, { publicKey: PUBLIC_KEY }),
     ]);
+
+    // Notificación al profesional asignado — reutiliza el template de la clínica.
+    // No bloquea ni afecta el resultado de la reserva si falla.
+    if (staffEmail) {
+      const staffParams = { ...params, to_email: staffEmail, staff_nombre: staffNombre || '' };
+      emailjs.send(SERVICE_ID, TEMPLATE_ID_CLINIC, staffParams, { publicKey: PUBLIC_KEY })
+        .catch(err => console.warn('Aviso al profesional falló:', err));
+    }
+
     return { success: true, clinicRes, clientRes };
   } catch (error) {
     console.error('EmailJS error:', error);

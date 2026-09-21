@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "setup:email": "node setup-email.js"
+    "setup:email": "node setup-email.js",
+    "setup:staff": "node setup-staff.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

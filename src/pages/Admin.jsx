@@ -1,68 +1,98 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getReservations } from '../utils/supabase';
-
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'imperium2024';
+import { signIn, signOut, getMyStaffProfile } from '../utils/staffAuth';
+import { getAllStaff, updateStaffMember, createStaffMember } from '../utils/staffAdmin';
+import { updateReservationPrecio } from '../utils/finance';
+import AdminCalendarView from '../components/AdminCalendarView';
+import AdminFinanceView from '../components/AdminFinanceView';
+import AdminServicesView from '../components/AdminServicesView';
+import AdminClientsView from '../components/AdminClientsView';
+import AdminLinksView from '../components/AdminLinksView';
+import AdminDesignView from '../components/AdminDesignView';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-function currentMonth() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function isThisMonth(fechaStr) {
-  if (!fechaStr) return false;
-  const m = currentMonth();
-  // fecha is a Spanish string like "lunes, 14 de abril de 2025"
-  // We compare by created_at instead (handled in stats)
-  return true; // fallback, real filter uses created_at
-}
-
 const SERVICE_COLORS = [
-  '#C9A84C', '#E8CC7A', '#9A7A2E', '#F5F0E8',
-  '#a78bfa', '#60a5fa', '#34d399', '#f87171',
-  '#fb923c', '#e879f9', '#38bdf8', '#4ade80',
+  '#263A22', '#B5924D', '#3A5432', '#8a9a7a',
+  '#6b8f71', '#a78b5f', '#4f6b52', '#c2a878',
+  '#5c7a5e', '#9c8560', '#3d5540', '#b09068',
 ];
 
 // ─── Login Screen ────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
+  const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (pw === ADMIN_PASSWORD) { onLogin(); }
-    else { setErr(true); setTimeout(() => setErr(false), 1500); }
+    setLoading(true);
+    setErr('');
+
+    const result = await signIn(email, pw);
+    if (!result.success) {
+      setErr('Credenciales incorrectas');
+      setLoading(false);
+      return;
+    }
+
+    const profile = await getMyStaffProfile();
+    if (!profile.success || profile.data.rol !== 'admin') {
+      await signOut();
+      setErr('Esta cuenta no tiene acceso al panel de administración');
+      setLoading(false);
+      return;
+    }
+
+    onLogin();
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '380px', textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: '1.4rem', fontWeight: 700, letterSpacing: '0.08em' }}>IMPERIUM</p>
-        <p style={{ fontFamily: 'Raleway, sans-serif', color: '#F5F0E8', fontSize: '0.55rem', letterSpacing: '0.4em', marginBottom: '40px' }}>LUX SPA · ADMIN</p>
+        <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: '1.4rem', fontWeight: 400, letterSpacing: '0.02em' }}>IMPERIUM</p>
+        <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.65rem', letterSpacing: '0.3em', marginBottom: '40px' }}>CLÍNICA ESTÉTICA · ADMIN</p>
 
-        <form onSubmit={submit} style={{ background: '#111', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '12px', padding: '36px' }}>
-          <p style={{ fontFamily: 'Playfair Display, serif', color: '#F5F0E8', fontSize: '1.3rem', marginBottom: '24px' }}>Panel de Administración</p>
+        <form onSubmit={submit} style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '14px', padding: '36px', boxShadow: '0 12px 32px rgba(23,27,22,0.06)' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.3rem', marginBottom: '24px', fontWeight: 400 }}>Panel de Administración</p>
+          <div style={{ marginBottom: '16px', textAlign: 'left' }}>
+            <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '6px' }}>EMAIL</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="tu@imperiumluxspa.com"
+              autoFocus
+              style={{
+                width: '100%', background: '#FFFFFF',
+                border: `1px solid ${err ? '#B3413A' : 'var(--border)'}`,
+                borderRadius: '8px', padding: '12px 16px',
+                color: 'var(--ink)', fontFamily: 'var(--font-sans)',
+                fontSize: '1rem', outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+            />
+          </div>
           <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-            <label style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.68rem', letterSpacing: '0.2em', display: 'block', marginBottom: '6px' }}>CONTRASEÑA</label>
+            <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '6px' }}>CONTRASEÑA</label>
             <input
               type="password"
               value={pw}
               onChange={e => setPw(e.target.value)}
               placeholder="••••••••••"
-              autoFocus
               style={{
-                width: '100%', background: '#1a1a1a',
-                border: `1px solid ${err ? '#e57373' : 'rgba(201,168,76,0.25)'}`,
-                borderRadius: '6px', padding: '12px 16px',
-                color: '#F5F0E8', fontFamily: 'Raleway, sans-serif',
+                width: '100%', background: '#FFFFFF',
+                border: `1px solid ${err ? '#B3413A' : 'var(--border)'}`,
+                borderRadius: '8px', padding: '12px 16px',
+                color: 'var(--ink)', fontFamily: 'var(--font-sans)',
                 fontSize: '1rem', outline: 'none',
                 transition: 'border-color 0.2s',
               }}
             />
-            {err && <p style={{ color: '#e57373', fontSize: '0.78rem', marginTop: '6px', fontFamily: 'Raleway, sans-serif' }}>Contraseña incorrecta</p>}
+            {err && <p style={{ color: '#B3413A', fontSize: '0.78rem', marginTop: '6px', fontFamily: 'var(--font-sans)' }}>{err}</p>}
           </div>
-          <button type="submit" style={{ width: '100%', background: '#C9A84C', color: '#0A0A0A', border: 'none', padding: '13px', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', letterSpacing: '0.2em', fontWeight: 700, cursor: 'pointer' }}>
-            INGRESAR
+          <button type="submit" disabled={loading} style={{ width: '100%', background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '13px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', letterSpacing: '0.1em', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}>
+            {loading ? 'INGRESANDO...' : 'INGRESAR'}
           </button>
         </form>
       </div>
@@ -73,14 +103,14 @@ function LoginScreen({ onLogin }) {
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, icon }) {
   return (
-    <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '10px', padding: '24px 28px' }}>
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.68rem', letterSpacing: '0.2em', marginBottom: '10px' }}>{label}</p>
-          <p style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: '2.4rem', fontWeight: 700, lineHeight: 1 }}>{value}</p>
-          {sub && <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.75rem', marginTop: '6px' }}>{sub}</p>}
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '10px' }}>{label}</p>
+          <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: '2.4rem', fontWeight: 400, lineHeight: 1 }}>{value}</p>
+          {sub && <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.75rem', marginTop: '6px' }}>{sub}</p>}
         </div>
-        <span style={{ fontSize: '1.6rem', opacity: 0.6 }}>{icon}</span>
+        <span style={{ fontSize: '1.6rem', opacity: 0.7 }}>{icon}</span>
       </div>
     </div>
   );
@@ -100,17 +130,17 @@ function TopServices({ reservations }) {
   const max = counts[0]?.[1] || 1;
 
   return (
-    <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '10px', padding: '24px 28px' }}>
-      <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.68rem', letterSpacing: '0.2em', marginBottom: '20px' }}>SERVICIOS MÁS RESERVADOS</p>
-      {counts.length === 0 && <p style={{ color: 'rgba(245,240,232,0.3)', fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem' }}>Sin datos aún</p>}
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
+      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '20px' }}>SERVICIOS MÁS RESERVADOS</p>
+      {counts.length === 0 && <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.85rem' }}>Sin datos aún</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {counts.map(([name, count], i) => (
           <div key={name}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontFamily: 'Raleway, sans-serif', color: '#F5F0E8', fontSize: '0.8rem', flex: 1, marginRight: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
-              <span style={{ fontFamily: 'Raleway, sans-serif', color: SERVICE_COLORS[i % SERVICE_COLORS.length], fontSize: '0.8rem', fontWeight: 700 }}>{count}</span>
+              <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.8rem', flex: 1, marginRight: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+              <span style={{ fontFamily: 'var(--font-sans)', color: SERVICE_COLORS[i % SERVICE_COLORS.length], fontSize: '0.8rem', fontWeight: 700 }}>{count}</span>
             </div>
-            <div style={{ height: '5px', background: '#1a1a1a', borderRadius: '99px', overflow: 'hidden' }}>
+            <div style={{ height: '5px', background: 'var(--border-soft)', borderRadius: '99px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${(count / max) * 100}%`, background: SERVICE_COLORS[i % SERVICE_COLORS.length], borderRadius: '99px', transition: 'width 0.6s ease' }} />
             </div>
           </div>
@@ -120,14 +150,228 @@ function TopServices({ reservations }) {
   );
 }
 
+// ─── Gestión de Equipo ─────────────────────────────────────────────────────────
+const actionBtn = {
+  background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px',
+  padding: '5px 10px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', cursor: 'pointer', color: 'var(--ink)',
+};
+
+function StaffRow({ member, onSaved, variant = 'table' }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ nombre: member.nombre, email: member.email || '', especialidad: member.especialidad || '' });
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    await updateStaffMember(member.id, form);
+    setSaving(false);
+    setEditing(false);
+    onSaved();
+  };
+
+  const toggleActivo = async () => {
+    await updateStaffMember(member.id, { activo: !member.activo });
+    onSaved();
+  };
+
+  const cellStyle = { padding: '12px 16px', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' };
+  const smallInput = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px 10px', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--ink)', width: '100%' };
+
+  const rolBadge = (
+    <span style={{ background: member.rol === 'admin' ? 'rgba(181,146,77,0.15)' : 'var(--border-soft)', color: member.rol === 'admin' ? 'var(--gold-accent)' : 'var(--olive)', padding: '3px 8px', borderRadius: '99px', fontSize: '0.7rem' }}>
+      {member.rol === 'admin' ? 'Admin' : 'Profesional'}
+    </span>
+  );
+
+  const actions = editing ? (
+    <>
+      <button onClick={save} disabled={saving} style={{ ...actionBtn, background: 'var(--olive)', color: 'var(--cream)', marginRight: '6px' }}>{saving ? '...' : 'Guardar'}</button>
+      <button onClick={() => setEditing(false)} style={actionBtn}>Cancelar</button>
+    </>
+  ) : (
+    <>
+      <button onClick={() => setEditing(true)} style={{ ...actionBtn, marginRight: '6px' }}>Editar</button>
+      <button onClick={toggleActivo} style={{ ...actionBtn, color: member.activo ? '#B3413A' : 'var(--olive)' }}>
+        {member.activo ? 'Desactivar' : 'Activar'}
+      </button>
+    </>
+  );
+
+  if (variant === 'card') {
+    return (
+      <div style={{ padding: '16px', borderBottom: '1px solid var(--border-soft)', opacity: member.activo ? 1 : 0.5 }}>
+        {editing ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+            <input style={smallInput} value={form.nombre} onChange={e => setForm(v => ({ ...v, nombre: e.target.value }))} placeholder="Nombre" />
+            <input style={smallInput} value={form.email} onChange={e => setForm(v => ({ ...v, email: e.target.value }))} placeholder="Email" />
+            <input style={smallInput} value={form.especialidad} onChange={e => setForm(v => ({ ...v, especialidad: e.target.value }))} placeholder="Especialidad" />
+          </div>
+        ) : (
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontWeight: 600, fontSize: '0.9rem' }}>{member.nombre}</p>
+              {rolBadge}
+            </div>
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{member.email || '—'}</p>
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{member.especialidad || 'Sin especialidad'}</p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', marginTop: '4px' }}>
+              <span style={{ color: member.activo ? 'var(--olive)' : '#B3413A', fontWeight: 600 }}>{member.activo ? 'Activo' : 'Inactivo'}</span>
+            </p>
+          </div>
+        )}
+        <div>{actions}</div>
+      </div>
+    );
+  }
+
+  return (
+    <tr style={{ borderBottom: '1px solid var(--border-soft)', opacity: member.activo ? 1 : 0.5 }}>
+      <td style={cellStyle}>
+        {editing ? <input style={smallInput} value={form.nombre} onChange={e => setForm(v => ({ ...v, nombre: e.target.value }))} /> : member.nombre}
+      </td>
+      <td style={cellStyle}>
+        {editing ? <input style={smallInput} value={form.email} onChange={e => setForm(v => ({ ...v, email: e.target.value }))} /> : (member.email || '—')}
+      </td>
+      <td style={cellStyle}>
+        {editing ? <input style={smallInput} value={form.especialidad} onChange={e => setForm(v => ({ ...v, especialidad: e.target.value }))} /> : (member.especialidad || '—')}
+      </td>
+      <td style={cellStyle}>{rolBadge}</td>
+      <td style={cellStyle}>
+        <span style={{ color: member.activo ? 'var(--olive)' : '#B3413A', fontWeight: 600 }}>{member.activo ? 'Activo' : 'Inactivo'}</span>
+      </td>
+      <td style={{ ...cellStyle, whiteSpace: 'nowrap' }}>{actions}</td>
+    </tr>
+  );
+}
+
+function AddStaffForm({ onCreated }) {
+  const [form, setForm] = useState({ nombre: '', email: '', especialidad: '', rol: 'profesional' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setResult(null);
+    const res = await createStaffMember(form);
+    setLoading(false);
+    if (!res.success) { setError(res.error); return; }
+    setResult({ email: form.email, password: res.password });
+    setForm({ nombre: '', email: '', especialidad: '', rol: 'profesional' });
+    onCreated();
+  };
+
+  const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 12px', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' };
+
+  return (
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px', marginBottom: '20px' }}>
+      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '18px' }}>+ AGREGAR PROFESIONAL</p>
+
+      {result && (
+        <div style={{ background: 'rgba(181,146,77,0.1)', border: '1px solid var(--gold-accent)', borderRadius: '8px', padding: '14px 18px', marginBottom: '16px', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' }}>
+          ✅ Cuenta creada para <strong>{result.email}</strong>.<br/>
+          Contraseña temporal: <strong style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>{result.password}</strong>
+          <p style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', marginTop: '6px' }}>Guarda o copia esta contraseña ahora — no se volverá a mostrar. Compártela con la persona por un canal seguro.</p>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ background: 'rgba(179,65,58,0.06)', border: '1px solid rgba(179,65,58,0.25)', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', fontFamily: 'var(--font-sans)', color: '#B3413A', fontSize: '0.82rem' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      <form onSubmit={submit} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-end' }}>
+        <div style={{ flex: '1 1 160px' }}>
+          <label style={{ display: 'block', fontSize: '0.65rem', color: 'var(--ink-soft)', marginBottom: '4px' }}>NOMBRE</label>
+          <input required style={{ ...inputStyle, width: '100%' }} value={form.nombre} onChange={e => setForm(v => ({ ...v, nombre: e.target.value }))} />
+        </div>
+        <div style={{ flex: '1 1 200px' }}>
+          <label style={{ display: 'block', fontSize: '0.65rem', color: 'var(--ink-soft)', marginBottom: '4px' }}>EMAIL</label>
+          <input required type="email" style={{ ...inputStyle, width: '100%' }} value={form.email} onChange={e => setForm(v => ({ ...v, email: e.target.value }))} />
+        </div>
+        <div style={{ flex: '1 1 160px' }}>
+          <label style={{ display: 'block', fontSize: '0.65rem', color: 'var(--ink-soft)', marginBottom: '4px' }}>ESPECIALIDAD</label>
+          <input style={{ ...inputStyle, width: '100%' }} value={form.especialidad} onChange={e => setForm(v => ({ ...v, especialidad: e.target.value }))} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.65rem', color: 'var(--ink-soft)', marginBottom: '4px' }}>ROL</label>
+          <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.rol} onChange={e => setForm(v => ({ ...v, rol: e.target.value }))}>
+            <option value="profesional">Profesional</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button type="submit" disabled={loading} style={{ background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '10px 20px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
+          {loading ? 'CREANDO...' : 'CREAR CUENTA'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function StaffManager() {
+  const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = () => {
+    getAllStaff().then(({ data }) => { setStaff(data || []); setLoading(false); });
+  };
+
+  useEffect(() => { reload(); }, []);
+
+  return (
+    <div>
+      <AddStaffForm onCreated={reload} />
+
+      <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border)' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em' }}>EQUIPO ({staff.length})</p>
+        </div>
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)' }}>Cargando...</div>
+        ) : staff.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)' }}>Aún no hay profesionales. Agrega el primero arriba.</div>
+        ) : (
+          <>
+            <div className="admin-table-desktop" style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['NOMBRE', 'EMAIL', 'ESPECIALIDAD', 'ROL', 'ESTADO', ''].map(h => (
+                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {staff.map(m => <StaffRow key={m.id} member={m} onSaved={reload} variant="table" />)}
+                </tbody>
+              </table>
+            </div>
+            <div className="admin-cards-mobile">
+              {staff.map(m => <StaffRow key={m.id} member={m} onSaved={reload} variant="card" />)}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Dashboard ──────────────────────────────────────────────────────────
 function Dashboard({ onLogout }) {
+  const [tab, setTab] = useState('reservas');
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
   const [filterService, setFilterService] = useState('');
   const [filterDate, setFilterDate]       = useState('');
   const [search, setSearch]               = useState('');
+
+  const handlePrecioSaved = (id, precio) => {
+    setReservations(prev => prev.map(r => r.id === id ? { ...r, precio } : r));
+  };
 
   useEffect(() => {
     getReservations().then(({ success, data, error }) => {
@@ -169,23 +413,23 @@ function Dashboard({ onLogout }) {
     return Object.entries(map).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
   }, [reservations]);
 
-  const inputStyle = { background: '#1a1a1a', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '6px', padding: '9px 14px', color: '#F5F0E8', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', outline: 'none' };
+  const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 14px', color: 'var(--ink)', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', outline: 'none' };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0A', paddingTop: '0' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', paddingTop: '0' }}>
       {/* Top bar */}
-      <div style={{ background: '#0D0D0D', borderBottom: '1px solid rgba(201,168,76,0.12)', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px' }}>
+      <div style={{ background: 'var(--cream)', borderBottom: '1px solid var(--border)', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: '1.1rem', fontWeight: 700 }}>IMPERIUM</span>
-          <span style={{ color: 'rgba(201,168,76,0.3)', fontSize: '1rem' }}>|</span>
-          <span style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.75rem', letterSpacing: '0.2em' }}>PANEL ADMIN</span>
+          <span style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: '1.1rem', fontWeight: 400 }}>IMPERIUM</span>
+          <span style={{ color: 'var(--border)', fontSize: '1rem' }}>|</span>
+          <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.75rem', letterSpacing: '0.15em' }}>PANEL ADMIN</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a href="/" style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.75rem', textDecoration: 'none', letterSpacing: '0.1em' }}
-            onMouseEnter={e => e.target.style.color = '#C9A84C'} onMouseLeave={e => e.target.style.color = 'rgba(245,240,232,0.4)'}>
+          <a href="/" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.75rem', textDecoration: 'none' }}
+            onMouseEnter={e => e.target.style.color = 'var(--olive)'} onMouseLeave={e => e.target.style.color = 'var(--ink-soft)'}>
             VER SITIO
           </a>
-          <button onClick={onLogout} style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.25)', color: 'rgba(245,240,232,0.5)', padding: '6px 14px', borderRadius: '4px', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', letterSpacing: '0.1em', cursor: 'pointer' }}>
+          <button onClick={onLogout} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink-soft)', padding: '6px 14px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', cursor: 'pointer' }}>
             SALIR
           </button>
         </div>
@@ -193,21 +437,48 @@ function Dashboard({ onLogout }) {
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'clamp(20px,4vw,32px) clamp(12px,3vw,24px)' }}>
         {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', color: '#F5F0E8', fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '4px' }}>Dashboard de Reservas</h1>
-          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.82rem' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '4px', fontWeight: 400 }}>
+            {({ reservas: 'Dashboard de Reservas', calendario: 'Calendario', finanzas: 'Finanzas', servicios: 'Tratamientos', clientes: 'Clientes y Fidelidad', enlaces: 'Enlaces', diseno: 'Diseño Gráfico', equipo: 'Gestión de Equipo' })[tab]}
+          </h1>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.82rem' }}>
             {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['enlaces', 'ENLACES'], ['diseno', 'DISEÑO'], ['equipo', 'EQUIPO']].map(([key, label]) => (
+            <button key={key} onClick={() => setTab(key)} style={{
+              background: tab === key ? 'var(--border-soft)' : 'transparent',
+              color: tab === key ? 'var(--olive)' : 'var(--ink-soft)',
+              border: tab === key ? '1px solid var(--olive)' : '1px solid transparent',
+              padding: '8px 16px', borderRadius: '8px', fontFamily: 'var(--font-sans)',
+              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+            }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'equipo' && <StaffManager />}
+        {tab === 'calendario' && <AdminCalendarView reservations={reservations} />}
+        {tab === 'finanzas' && <AdminFinanceView reservations={reservations} />}
+        {tab === 'servicios' && <AdminServicesView />}
+        {tab === 'clientes' && <AdminClientsView reservations={reservations} />}
+        {tab === 'enlaces' && <AdminLinksView />}
+        {tab === 'diseno' && <AdminDesignView />}
+
+        {tab === 'reservas' && (
+          <>
         {loading && (
-          <div style={{ textAlign: 'center', padding: '80px', color: '#C9A84C', fontFamily: 'Raleway, sans-serif' }}>
+          <div style={{ textAlign: 'center', padding: '80px', color: 'var(--olive)', fontFamily: 'var(--font-sans)' }}>
             Cargando reservas...
           </div>
         )}
 
         {error && (
-          <div style={{ background: 'rgba(229,115,115,0.08)', border: '1px solid rgba(229,115,115,0.3)', borderRadius: '8px', padding: '16px 20px', marginBottom: '24px', fontFamily: 'Raleway, sans-serif', color: '#e57373', fontSize: '0.85rem' }}>
+          <div style={{ background: 'rgba(179,65,58,0.06)', border: '1px solid rgba(179,65,58,0.25)', borderRadius: '8px', padding: '16px 20px', marginBottom: '24px', fontFamily: 'var(--font-sans)', color: '#B3413A', fontSize: '0.85rem' }}>
             ⚠️ Error al cargar datos: {error}
             <br/><span style={{ opacity: 0.7, fontSize: '0.78rem' }}>Verifica que las credenciales de Supabase estén configuradas en el .env</span>
           </div>
@@ -228,28 +499,28 @@ function Dashboard({ onLogout }) {
               <TopServices reservations={reservations} />
 
               {/* Filters */}
-              <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '10px', padding: '24px 28px' }}>
-                <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.68rem', letterSpacing: '0.2em', marginBottom: '20px' }}>FILTROS</p>
+              <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
+                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '20px' }}>FILTROS</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
-                    <label style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '5px' }}>BUSCAR</label>
+                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>BUSCAR</label>
                     <input type="text" placeholder="Nombre, email, teléfono..." value={search} onChange={e => setSearch(e.target.value)}
                       style={{ ...inputStyle, width: '100%' }} />
                   </div>
                   <div>
-                    <label style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '5px' }}>SERVICIO</label>
+                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>SERVICIO</label>
                     <select value={filterService} onChange={e => setFilterService(e.target.value)} style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}>
                       <option value="">Todos los servicios</option>
                       {allServices.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.4)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '5px' }}>FILTRAR POR TEXTO EN FECHA</label>
+                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>FILTRAR POR TEXTO EN FECHA</label>
                     <input type="text" placeholder="ej: abril, lunes, 2025..." value={filterDate} onChange={e => setFilterDate(e.target.value)}
                       style={{ ...inputStyle, width: '100%' }} />
                   </div>
                   <button onClick={() => { setSearch(''); setFilterService(''); setFilterDate(''); }}
-                    style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: 'rgba(245,240,232,0.5)', padding: '8px', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', letterSpacing: '0.1em', cursor: 'pointer', marginTop: '4px' }}>
+                    style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink-soft)', padding: '8px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', cursor: 'pointer', marginTop: '4px' }}>
                     LIMPIAR FILTROS
                   </button>
                 </div>
@@ -257,18 +528,18 @@ function Dashboard({ onLogout }) {
             </div>
 
             {/* Table */}
-            <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(201,168,76,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.68rem', letterSpacing: '0.2em' }}>
+            <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em' }}>
                   LISTA DE RESERVAS
                 </p>
-                <span style={{ fontFamily: 'Raleway, sans-serif', color: '#C9A84C', fontSize: '0.75rem', fontWeight: 600 }}>
+                <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontSize: '0.75rem', fontWeight: 600 }}>
                   {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
               {filtered.length === 0 ? (
-                <div style={{ padding: '40px 16px', textAlign: 'center', color: 'rgba(245,240,232,0.3)', fontFamily: 'Raleway, sans-serif', fontSize: '0.88rem' }}>
+                <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.88rem' }}>
                   {reservations.length === 0 ? 'Aún no hay reservas registradas.' : 'No hay resultados con estos filtros.'}
                 </div>
               ) : (
@@ -277,27 +548,31 @@ function Dashboard({ onLogout }) {
                   <div className="admin-table-desktop" style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
-                          {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'TELÉFONO', 'EMAIL'].map(h => (
-                            <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'Raleway, sans-serif', color: 'rgba(201,168,76,0.7)', fontSize: '0.62rem', letterSpacing: '0.15em', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'PROFESIONAL', 'PRECIO', 'TELÉFONO', 'EMAIL'].map(h => (
+                            <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {filtered.map((r, i) => (
-                          <tr key={r.id || i} style={{ borderBottom: '1px solid rgba(201,168,76,0.05)', transition: 'background 0.15s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.04)'}
+                          <tr key={r.id || i} style={{ borderBottom: '1px solid var(--border-soft)', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--cream-soft)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                             <td style={tdStyle}>{r.fecha || '—'}</td>
-                            <td style={{ ...tdStyle, color: '#C9A84C', fontWeight: 700 }}>{r.hora || '—'}</td>
-                            <td style={{ ...tdStyle, color: '#F5F0E8', fontWeight: 500 }}>{r.nombre || '—'}</td>
+                            <td style={{ ...tdStyle, color: 'var(--olive)', fontWeight: 700 }}>{r.hora || '—'}</td>
+                            <td style={{ ...tdStyle, color: 'var(--ink)', fontWeight: 500 }}>{r.nombre || '—'}</td>
                             <td style={tdStyle}>
-                              <span style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', padding: '3px 8px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'Raleway, sans-serif', whiteSpace: 'nowrap' }}>
+                              <span style={{ background: 'var(--border-soft)', color: 'var(--olive)', padding: '3px 8px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
                                 {r.servicio || '—'}
                               </span>
                             </td>
+                            <td style={tdStyle}>{r.staff?.nombre || '—'}</td>
+                            <td style={tdStyle}>
+                              <PrecioCell reservation={r} onSaved={handlePrecioSaved} />
+                            </td>
                             <td style={tdStyle}>{r.telefono || '—'}</td>
-                            <td style={{ ...tdStyle, color: 'rgba(245,240,232,0.5)' }}>{r.email || '—'}</td>
+                            <td style={{ ...tdStyle, color: 'var(--ink-soft)' }}>{r.email || '—'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -307,18 +582,23 @@ function Dashboard({ onLogout }) {
                   {/* Mobile cards */}
                   <div className="admin-cards-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                     {filtered.map((r, i) => (
-                      <div key={r.id || i} style={{ padding: '16px', borderBottom: '1px solid rgba(201,168,76,0.07)' }}>
+                      <div key={r.id || i} style={{ padding: '16px', borderBottom: '1px solid var(--border-soft)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <p style={{ fontFamily: 'Raleway, sans-serif', color: '#F5F0E8', fontWeight: 600, fontSize: '0.9rem' }}>{r.nombre || '—'}</p>
-                          <span style={{ fontFamily: 'Raleway, sans-serif', color: '#C9A84C', fontWeight: 700, fontSize: '0.9rem' }}>{r.hora || '—'}</span>
+                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontWeight: 600, fontSize: '0.9rem' }}>{r.nombre || '—'}</p>
+                          <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontWeight: 700, fontSize: '0.9rem' }}>{r.hora || '—'}</span>
                         </div>
-                        <span style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', padding: '3px 10px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'Raleway, sans-serif', display: 'inline-block', marginBottom: '8px' }}>
+                        <span style={{ background: 'var(--border-soft)', color: 'var(--olive)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'var(--font-sans)', display: 'inline-block', marginBottom: '8px' }}>
                           {r.servicio || '—'}
                         </span>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>📅 {r.fecha || '—'}</p>
-                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>📞 {r.telefono || '—'}</p>
-                          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.5)', fontSize: '0.78rem' }}>✉️ {r.email || '—'}</p>
+                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>📅 {r.fecha || '—'}</p>
+                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>💼 {r.staff?.nombre || 'sin asignar'}</p>
+                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>📞 {r.telefono || '—'}</p>
+                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>✉️ {r.email || '—'}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                            <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>💰</span>
+                            <PrecioCell reservation={r} onSaved={handlePrecioSaved} />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -328,10 +608,12 @@ function Dashboard({ onLogout }) {
             </div>
           </>
         )}
+          </>
+        )}
       </div>
 
       <style>{`
-        select option { background: #1a1a1a; color: #F5F0E8; }
+        select option { background: #FFFFFF; color: var(--ink); }
         @media (min-width: 640px) { .admin-cards-mobile { display: none !important; } }
         @media (max-width: 639px) { .admin-table-desktop { display: none !important; } }
       `}</style>
@@ -339,20 +621,59 @@ function Dashboard({ onLogout }) {
   );
 }
 
+function PrecioCell({ reservation, onSaved }) {
+  const [value, setValue] = useState(reservation.precio ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const num = value === '' ? null : Number(value);
+    setSaving(true);
+    await updateReservationPrecio(reservation.id, num);
+    setSaving(false);
+    onSaved(reservation.id, num);
+  };
+
+  return (
+    <input
+      type="number" min="0" placeholder="—" value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={save}
+      disabled={saving}
+      style={{ width: '90px', background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: 'var(--ink)' }}
+    />
+  );
+}
+
 const tdStyle = {
   padding: '14px 20px',
-  fontFamily: 'Raleway, sans-serif',
-  color: 'rgba(245,240,232,0.7)',
+  fontFamily: 'var(--font-sans)',
+  color: 'var(--ink-soft)',
   fontSize: '0.82rem',
   whiteSpace: 'nowrap',
 };
 
 // ─── Page export ─────────────────────────────────────────────────────────────
 export default function Admin() {
-  const [auth, setAuth] = useState(() => sessionStorage.getItem('imp_admin') === '1');
+  const [auth, setAuth] = useState(false);
+  const [checking, setChecking] = useState(true);
 
-  const login  = () => { sessionStorage.setItem('imp_admin', '1'); setAuth(true); };
-  const logout = () => { sessionStorage.removeItem('imp_admin'); setAuth(false); };
+  useEffect(() => {
+    getMyStaffProfile().then(profile => {
+      setAuth(profile.success && profile.data.rol === 'admin');
+      setChecking(false);
+    });
+  }, []);
+
+  const login  = () => setAuth(true);
+  const logout = async () => { await signOut(); setAuth(false); };
+
+  if (checking) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--olive)', fontFamily: 'var(--font-sans)' }}>
+        Cargando...
+      </div>
+    );
+  }
 
   return auth ? <Dashboard onLogout={logout} /> : <LoginScreen onLogin={login} />;
 }
