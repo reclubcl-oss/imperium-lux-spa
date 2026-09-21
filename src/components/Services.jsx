@@ -11,6 +11,19 @@ import { useFocusTrap } from '../utils/useFocusTrap';
 // internacional sin espacios ni símbolos, como lo pide el link de WhatsApp.
 const WHATSAPP_NUMBER = '56971494060';
 
+// true en pantallas de celular (<= 640px); se actualiza si giras el teléfono.
+function useIsMobile() {
+  const query = '(max-width: 640px)';
+  const [mobile, setMobile] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = (e) => setMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return mobile;
+}
+
 function PlaceholderPhoto({ nombre }) {
   return (
     <div style={{
@@ -130,8 +143,10 @@ function TreatmentDetailModal({ service, imageSrc, onClose }) {
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('Todos');
+  const [filter, setFilter] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     getActiveServices().then(({ data }) => {
@@ -140,12 +155,23 @@ export default function Services() {
     });
   }, []);
 
-  const categories = useMemo(() => {
-    const set = new Set(services.map(s => s.categoria).filter(Boolean));
-    return ['Todos', ...set];
-  }, [services]);
+  // Sin pestaña "Todos": con 24 tratamientos, en celular eso era un scroll
+  // interminable. Se abre en la primera categoría y el resto se ve con los
+  // chips o con "Ver más". Los tratamientos sin categoría van en "Otros".
+  const catOf = (s) => s.categoria || 'Otros';
+  const categories = useMemo(() => [...new Set(services.map(catOf))], [services]);
+  const activeCategory = categories.includes(filter) ? filter : categories[0];
+  const filtered = services.filter(s => catOf(s) === activeCategory);
 
-  const filtered = filter === 'Todos' ? services : services.filter(s => s.categoria === filter);
+  const limit = isMobile ? 6 : 8;
+  const visible = expanded ? filtered : filtered.slice(0, limit);
+  const hidden = filtered.length - visible.length;
+
+  const pickCategory = (cat) => { setFilter(cat); setExpanded(false); };
+  const collapse = () => {
+    setExpanded(false);
+    document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const imageFor = (s) => s.foto_url || TREATMENT_DEFAULT_IMAGE[s.nombre] || CATEGORY_DEFAULT_IMAGE[s.categoria];
 
@@ -173,13 +199,13 @@ export default function Services() {
                 varias filas; en celular eso ocupaba mucho alto antes de
                 llegar a los tratamientos, así que ahí van en una sola fila
                 que se desliza al costado (como los filtros de Instagram). */}
-            {categories.length > 2 && (
+            {categories.length > 1 && (
               <div className="category-chips" style={{ gap: '8px', marginBottom: 'clamp(28px,4vw,40px)' }}>
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setFilter(cat)} style={{
-                    background: filter === cat ? 'var(--olive)' : 'transparent',
-                    color: filter === cat ? 'var(--cream)' : 'var(--ink-soft)',
-                    border: filter === cat ? '1px solid var(--olive)' : '1px solid var(--border)',
+                  <button key={cat} onClick={() => pickCategory(cat)} style={{
+                    background: activeCategory === cat ? 'var(--olive)' : 'transparent',
+                    color: activeCategory === cat ? 'var(--cream)' : 'var(--ink-soft)',
+                    border: activeCategory === cat ? '1px solid var(--olive)' : '1px solid var(--border)',
                     padding: '8px 16px', borderRadius: '99px', fontFamily: 'var(--font-sans)',
                     fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
                     flexShrink: 0,
@@ -194,8 +220,8 @@ export default function Services() {
                 nombre, precio y los dos botones) en vez de ir directo a
                 reservar, para que el cliente pueda elegir entre agendar de
                 una vez o preguntar antes por WhatsApp. */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '18px' }}>
-              {filtered.map(s => (
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: isMobile ? '12px' : '18px' }}>
+              {visible.map(s => (
                 <div key={s.id} role="button" tabIndex={0}
                   onClick={() => setSelectedService(s)}
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedService(s); } }}
@@ -203,13 +229,8 @@ export default function Services() {
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold-accent)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}>
                   {imageFor(s) ? <TreatmentImage src={imageFor(s)} alt={s.nombre} /> : <PlaceholderPhoto nombre={s.nombre} />}
-                  <div style={{ padding: '16px 18px' }}>
-                    {s.categoria && (
-                      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.1em', marginBottom: '6px' }}>
-                        {s.categoria.toUpperCase()}
-                      </p>
-                    )}
-                    <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.02rem', fontWeight: 400, marginBottom: s.precio ? '6px' : 0 }}>{s.nombre}</h3>
+                  <div style={{ padding: isMobile ? '12px 12px 14px' : '16px 18px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: isMobile ? '0.92rem' : '1.02rem', lineHeight: 1.3, fontWeight: 400, marginBottom: s.precio ? '6px' : 0 }}>{s.nombre}</h3>
                     {s.precio && (
                       <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontSize: '0.88rem', fontWeight: 700 }}>{formatCLP(s.precio)}</p>
                     )}
@@ -217,10 +238,22 @@ export default function Services() {
                 </div>
               ))}
             </div>
+
+            {filtered.length > limit && (
+              <div style={{ textAlign: 'center', marginTop: '28px' }}>
+                <button type="button" onClick={expanded ? collapse : () => setExpanded(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', color: 'var(--olive)', border: '1px solid var(--olive)', padding: '12px 26px', borderRadius: '99px', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s, color 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--olive)'; e.currentTarget.style.color = 'var(--cream)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--olive)'; }}>
+                  {expanded ? 'Ver menos' : `Ver más (${hidden})`}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+              </div>
+            )}
           </>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
           <Link to="/reservar" style={{ background: 'var(--olive)', color: 'var(--cream)', padding: '15px clamp(28px,6vw,48px)', fontSize: '0.85rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', display: 'inline-block', transition: 'background 0.3s' }}
             onMouseEnter={e => e.target.style.background = 'var(--olive-light)'}
             onMouseLeave={e => e.target.style.background = 'var(--olive)'}>
