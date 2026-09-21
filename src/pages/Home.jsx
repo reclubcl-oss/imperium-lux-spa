@@ -2,52 +2,74 @@ import Hero from '../components/Hero';
 import Services from '../components/Services';
 import VideoSection from '../components/VideoSection';
 import Location from '../components/Location';
-
-const stats = [
-  { number: '500+', label: 'Clientes Satisfechos' },
-  { number: '15+',  label: 'Tratamientos Exclusivos' },
-  { number: '5★',   label: 'Valoración Media' },
-  { number: '3+',   label: 'Años de Experiencia' },
-];
+import PromoPopup from '../components/PromoPopup';
+import LoyaltySection from '../components/LoyaltySection';
+import FadeImage from '../components/FadeImage';
+import cienciaImg from '../assets/brand/ciencia.webp';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getActiveServices } from '../utils/services';
 
 export default function Home() {
+  // Solo cifras verificables: la cantidad de tratamientos sale en vivo de la
+  // base de datos, y el resto son datos fijos del servicio. Si más adelante
+  // quieres mostrar "clientes atendidos" o "años de experiencia", agrega esas
+  // cifras acá con los números reales.
+  const [treatmentCount, setTreatmentCount] = useState(null);
+  useEffect(() => {
+    getActiveServices().then(res => { if (res.success) setTreatmentCount(res.data.length); });
+  }, []);
+
+  const stats = [
+    ...(treatmentCount ? [{ number: treatmentCount, label: 'Tratamientos disponibles' }] : []),
+    { number: '6', label: 'Días de atención a la semana' },
+    { number: '1 a 1', label: 'Atención personalizada' },
+  ];
+
   return (
     <>
+      <PromoPopup />
       <Hero />
       <Services />
 
       {/* Stats */}
-      <section style={{ background: '#0D0D0D', padding: 'clamp(40px,7vw,64px) 16px', borderTop: '1px solid rgba(201,168,76,0.1)', borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
+      <section style={{ background: 'var(--cream)', padding: 'clamp(40px,7vw,64px) 16px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
           {stats.map(({ number, label }) => (
             <div key={label}>
-              <p style={{ fontFamily: 'Playfair Display, serif', color: '#C9A84C', fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 700, marginBottom: '6px' }}>{number}</p>
-              <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.55)', fontSize: 'clamp(0.65rem,1.5vw,0.8rem)', letterSpacing: '0.12em', fontWeight: 500 }}>{label.toUpperCase()}</p>
+              <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 400, marginBottom: '6px' }}>{number}</p>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: 'clamp(0.7rem,1.5vw,0.82rem)', letterSpacing: '0.05em', fontWeight: 500 }}>{label}</p>
             </div>
           ))}
         </div>
       </section>
 
+      <LoyaltySection />
+
       <VideoSection />
 
-      {/* About */}
-      <section id="nosotros" style={{ background: '#111', padding: 'clamp(60px,10vw,100px) 16px' }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ color: '#C9A84C', fontSize: '0.65rem', letterSpacing: '0.4em', fontFamily: 'Raleway, sans-serif', fontWeight: 600, marginBottom: '14px' }}>✦ NUESTRA ESENCIA ✦</p>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem,5vw,2.8rem)', color: '#F5F0E8', marginBottom: '22px', fontWeight: 700 }}>
-            Donde la Belleza se Convierte en Arte
-          </h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '24px' }}>
-            <div style={{ width: '36px', height: '1px', background: '#C9A84C' }} />
-            <div style={{ width: '4px', height: '4px', background: '#C9A84C', transform: 'rotate(45deg)' }} />
-            <div style={{ width: '36px', height: '1px', background: '#C9A84C' }} />
+      {/* About — sección oscura estilo "Ciencia, precisión y cuidado" */}
+      <section id="nosotros" style={{ background: 'var(--forest)', padding: 0 }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,340px),1fr))' }}>
+          <div style={{ padding: 'clamp(48px,8vw,80px) clamp(24px,5vw,48px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '16px' }}>NUESTRA FORMA DE CUIDARTE</p>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--cream)', marginBottom: '20px', fontWeight: 400, lineHeight: 1.15 }}>
+              Ciencia, precisión y cuidado
+            </h2>
+            <div style={{ width: '48px', height: '3px', background: 'var(--gold-accent)', marginBottom: '22px' }} />
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.75)', fontSize: 'clamp(0.9rem,2vw,1rem)', lineHeight: 1.9, marginBottom: '16px' }}>
+              En Imperium combinamos atención personalizada, tecnología estética y un enfoque cercano para acompañarte en cada etapa de tu tratamiento.
+            </p>
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.75)', fontSize: 'clamp(0.9rem,2vw,1rem)', lineHeight: 1.9, marginBottom: '28px' }}>
+              Cada procedimiento comienza con una evaluación orientada a tus necesidades y objetivos.
+            </p>
+            <Link to="/reservar" style={{ alignSelf: 'flex-start', background: 'var(--gold-accent)', color: 'var(--forest)', padding: '14px 30px', fontSize: '0.85rem', fontWeight: 700, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)' }}>
+              Solicitar evaluación
+            </Link>
           </div>
-          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.65)', fontSize: 'clamp(0.88rem,2vw,1rem)', lineHeight: 1.9, marginBottom: '18px' }}>
-            En Imperium Lux Spa, creemos que la belleza es una expresión de bienestar interior. Nuestro equipo de especialistas altamente cualificados combina las últimas tecnologías con protocolos exclusivos para ofrecerte resultados excepcionales.
-          </p>
-          <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.65)', fontSize: 'clamp(0.88rem,2vw,1rem)', lineHeight: 1.9 }}>
-            Cada visita es una experiencia sensorial única en un entorno de máximo lujo y confort, donde tu bienestar es nuestra prioridad absoluta.
-          </p>
+          <div style={{ minHeight: '320px' }}>
+            <FadeImage src={cienciaImg} alt="Instalaciones y espacios de Clínica Estética Imperium" containerStyle={{ minHeight: '320px' }} />
+          </div>
         </div>
       </section>
 

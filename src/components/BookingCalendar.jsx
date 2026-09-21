@@ -1,54 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
+import { getAvailableSlotsAnyStaff } from '../utils/schedule';
 
-const MORNING_SLOTS   = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
-const AFTERNOON_SLOTS = ['14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
-
-const BOOKED = {};
-
-function formatDate(date) {
-  return date.toISOString().split('T')[0];
-}
-
-function TimeSlot({ time, isBooked, isSelected, onSelect }) {
+function TimeSlot({ time, isSelected, onSelect }) {
   const [hover, setHover] = useState(false);
   return (
     <button
-      disabled={isBooked}
-      onClick={() => !isBooked && onSelect(time)}
+      onClick={() => onSelect(time)}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
         padding: '10px 18px',
         borderRadius: '8px',
-        fontFamily: 'Raleway, sans-serif',
+        fontFamily: 'var(--font-sans)',
         fontSize: '0.85rem',
         fontWeight: 600,
-        letterSpacing: '0.05em',
-        cursor: isBooked ? 'not-allowed' : 'pointer',
+        cursor: 'pointer',
         border: isSelected
-          ? '1px solid #C9A84C'
-          : isBooked
-          ? '1px solid rgba(255,255,255,0.05)'
+          ? '1px solid var(--olive)'
           : hover
-          ? '1px solid rgba(201,168,76,0.6)'
-          : '1px solid rgba(201,168,76,0.2)',
+          ? '1px solid var(--gold-accent)'
+          : '1px solid var(--border)',
         background: isSelected
-          ? 'linear-gradient(135deg, #C9A84C, #E8CC7A)'
-          : isBooked
-          ? 'rgba(255,255,255,0.03)'
+          ? 'var(--olive)'
           : hover
-          ? 'rgba(201,168,76,0.12)'
-          : 'rgba(201,168,76,0.05)',
-        color: isBooked
-          ? 'rgba(255,255,255,0.15)'
-          : isSelected
-          ? '#0A0A0A'
-          : '#F5F0E8',
+          ? 'var(--border-soft)'
+          : 'var(--cream)',
+        color: isSelected ? 'var(--cream)' : 'var(--ink)',
         transition: 'all 0.2s',
-        boxShadow: isSelected ? '0 4px 16px rgba(201,168,76,0.3)' : 'none',
-        transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-        textDecoration: isBooked ? 'line-through' : 'none',
       }}
     >
       {time}
@@ -59,9 +38,23 @@ function TimeSlot({ time, isBooked, isSelected, onSelect }) {
 export default function BookingCalendar({ onSelect }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    setLoading(true);
+    setError('');
+    getAvailableSlotsAnyStaff(selectedDate).then(({ success, data, error }) => {
+      if (success) setSlots(data);
+      else setError(error);
+      setLoading(false);
+    });
+  }, [selectedDate]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -74,28 +67,29 @@ export default function BookingCalendar({ onSelect }) {
     onSelect({ date: selectedDate, time });
   };
 
-  const bookedForDay = selectedDate ? (BOOKED[formatDate(selectedDate)] || []) : [];
-
   const isDisabled = ({ date }) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
-    return d < today || d.getDay() === 0;
+    return d < today;
   };
+
+  const morning = slots.filter(t => t < '14:00');
+  const afternoon = slots.filter(t => t >= '14:00');
 
   return (
     <div>
       {/* Calendar wrapper */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(201,168,76,0.15)',
+        background: 'var(--cream)',
+        border: '1px solid var(--border)',
         borderRadius: '16px',
         padding: '22px 20px',
         marginBottom: '28px',
-        backdropFilter: 'blur(12px)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
       }}>
         <Calendar
           onChange={handleDateChange}
+          prevAriaLabel="Mes anterior"
+          nextAriaLabel="Mes siguiente"
           value={selectedDate}
           tileDisabled={isDisabled}
           minDate={today}
@@ -124,61 +118,67 @@ export default function BookingCalendar({ onSelect }) {
         <div style={{ animation: 'fadeIn 0.35s ease' }}>
           {/* Section label */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(201,168,76,0.4), transparent)' }} />
-            <p style={{ fontFamily: 'Raleway, sans-serif', color: '#C9A84C', fontSize: '0.65rem', letterSpacing: '0.35em', fontWeight: 700 }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.68rem', letterSpacing: '0.22em', fontWeight: 700 }}>
               HORARIOS DISPONIBLES
             </p>
-            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.4))' }} />
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
           </div>
 
-          {/* Morning */}
-          <div style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(201,168,76,0.1)',
-            borderRadius: '12px',
-            padding: '18px 20px',
-            marginBottom: '12px',
-            backdropFilter: 'blur(8px)',
-          }}>
-            <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.45)', fontSize: '0.68rem', letterSpacing: '0.2em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>☀️</span> MAÑANA
+          {loading && (
+            <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textAlign: 'center' }}>
+              Buscando disponibilidad...
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {MORNING_SLOTS.map(time => (
-                <TimeSlot
-                  key={time}
-                  time={time}
-                  isBooked={bookedForDay.includes(time)}
-                  isSelected={selectedTime === time}
-                  onSelect={handleTimeSelect}
-                />
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* Afternoon */}
-          <div style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(201,168,76,0.1)',
-            borderRadius: '12px',
-            padding: '18px 20px',
-            backdropFilter: 'blur(8px)',
-          }}>
-            <p style={{ fontFamily: 'Raleway, sans-serif', color: 'rgba(245,240,232,0.45)', fontSize: '0.68rem', letterSpacing: '0.2em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>🌙</span> TARDE
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {AFTERNOON_SLOTS.map(time => (
-                <TimeSlot
-                  key={time}
-                  time={time}
-                  isBooked={bookedForDay.includes(time)}
-                  isSelected={selectedTime === time}
-                  onSelect={handleTimeSelect}
-                />
-              ))}
+          {error && (
+            <div style={{ background: 'rgba(179,65,58,0.06)', border: '1px solid rgba(179,65,58,0.25)', borderRadius: '8px', padding: '14px 18px', fontFamily: 'var(--font-sans)', color: '#B3413A', fontSize: '0.82rem' }}>
+              ⚠️ No se pudo cargar la disponibilidad: {error}
             </div>
-          </div>
+          )}
+
+          {!loading && !error && slots.length === 0 && (
+            <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textAlign: 'center', padding: '12px 0' }}>
+              No hay horarios disponibles este día. Prueba con otra fecha.
+            </p>
+          )}
+
+          {!loading && !error && morning.length > 0 && (
+            <div style={{
+              background: 'var(--cream-soft)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '18px 20px',
+              marginBottom: '12px',
+            }}>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.7rem', letterSpacing: '0.15em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>☀️</span> MAÑANA
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {morning.map(time => (
+                  <TimeSlot key={time} time={time} isSelected={selectedTime === time} onSelect={handleTimeSelect} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && afternoon.length > 0 && (
+            <div style={{
+              background: 'var(--cream-soft)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '18px 20px',
+            }}>
+              <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.7rem', letterSpacing: '0.15em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🌙</span> TARDE
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {afternoon.map(time => (
+                  <TimeSlot key={time} time={time} isSelected={selectedTime === time} onSelect={handleTimeSelect} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

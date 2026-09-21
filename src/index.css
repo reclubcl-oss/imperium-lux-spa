@@ -1,14 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Raleway:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --gold: #C9A84C;
-  --gold-light: #E8CC7A;
-  --gold-dark: #9A7A2E;
-  --black: #0A0A0A;
-  --dark: #111111;
-  --dark-2: #1A1A1A;
-  --white: #F5F0E8;
+  --cream: #FFFEFB;
+  --cream-soft: #FAF9F5;
+  --border: #E6E5DD;
+  --border-soft: #F1F1E9;
+  --forest: #172616;
+  --forest-dark: #0F1A0E;
+  --olive: #263A22;
+  --olive-light: #3A5432;
+  --ink: #171B16;
+  --ink-soft: #5B6558;
+  --gold-accent: #B5924D;
+  /* Dorado para TEXTO sobre fondo claro (cumple contraste 4.5:1); --gold-accent queda para fondos oscuros y detalles */
+  --gold-text: #86672A;
+
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: -apple-system, 'system-ui', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -21,14 +29,20 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Deja espacio para el navbar fijo (72px) al saltar a estas secciones por ancla. */
+#servicios, #fidelidad, #nosotros, #ubicacion, #contacto {
+  scroll-margin-top: 84px;
+}
+
 body {
-  font-family: 'Raleway', sans-serif;
-  background-color: var(--black);
-  color: var(--white);
+  font-family: var(--font-sans);
+  background-color: var(--cream);
+  color: var(--ink-soft);
 }
 
 h1, h2, h3, h4 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-serif);
+  font-weight: 400;
 }
 
 /* ── React Calendar ─────────────────────────────────────────── */
@@ -36,8 +50,8 @@ h1, h2, h3, h4 {
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
-  color: #F5F0E8 !important;
-  font-family: 'Raleway', sans-serif !important;
+  color: var(--ink) !important;
+  font-family: var(--font-sans) !important;
   width: 100% !important;
   padding: 0 !important;
 }
@@ -62,11 +76,11 @@ h1, h2, h3, h4 {
 }
 
 .react-calendar__navigation__label__labelText {
-  font-family: 'Playfair Display', serif !important;
+  font-family: var(--font-serif) !important;
   font-size: 1.05rem !important;
-  font-weight: 600 !important;
-  color: #F5F0E8 !important;
-  letter-spacing: 0.04em !important;
+  font-weight: 400 !important;
+  color: var(--ink) !important;
+  letter-spacing: 0.01em !important;
   text-transform: capitalize !important;
 }
 
@@ -87,9 +101,9 @@ h1, h2, h3, h4 {
   height: 36px !important;
   min-width: 36px !important;
   border-radius: 50% !important;
-  background: rgba(201,168,76,0.08) !important;
-  border: 1px solid rgba(201,168,76,0.25) !important;
-  color: #C9A84C !important;
+  background: var(--border-soft) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--olive) !important;
   font-size: 1.1rem !important;
   display: flex !important;
   align-items: center !important;
@@ -100,9 +114,8 @@ h1, h2, h3, h4 {
 }
 
 .react-calendar__navigation__arrow:hover {
-  background: rgba(201,168,76,0.2) !important;
-  border-color: #C9A84C !important;
-  box-shadow: 0 0 12px rgba(201,168,76,0.2) !important;
+  background: var(--border) !important;
+  border-color: var(--gold-accent) !important;
 }
 
 /* Hide decade prev/next (we only want month arrows) */
@@ -123,11 +136,11 @@ h1, h2, h3, h4 {
 
 .react-calendar__month-view__weekdays abbr {
   text-decoration: none !important;
-  font-family: 'Raleway', sans-serif !important;
+  font-family: var(--font-sans) !important;
   font-size: 0.65rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.12em !important;
-  color: rgba(201,168,76,0.7) !important;
+  color: var(--gold-text) !important;
   text-transform: uppercase !important;
 }
 
@@ -138,10 +151,10 @@ h1, h2, h3, h4 {
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  font-family: 'Raleway', sans-serif !important;
+  font-family: var(--font-sans) !important;
   font-size: 0.82rem !important;
   font-weight: 500 !important;
-  color: #F5F0E8 !important;
+  color: var(--ink) !important;
   background: transparent !important;
   transition: all 0.18s !important;
   border: 1px solid transparent !important;
@@ -149,35 +162,34 @@ h1, h2, h3, h4 {
 }
 
 .react-calendar__tile:enabled:hover {
-  background: rgba(201,168,76,0.12) !important;
-  border-color: rgba(201,168,76,0.3) !important;
-  color: #C9A84C !important;
+  background: var(--border-soft) !important;
+  border-color: var(--gold-accent) !important;
+  color: var(--olive) !important;
 }
 
 .react-calendar__tile--active,
 .react-calendar__tile--active:enabled:hover {
-  background: linear-gradient(135deg, #C9A84C, #9A7A2E) !important;
-  color: #0A0A0A !important;
+  background: var(--olive) !important;
+  color: var(--cream) !important;
   border-color: transparent !important;
   font-weight: 700 !important;
-  box-shadow: 0 4px 14px rgba(201,168,76,0.4) !important;
 }
 
 .react-calendar__tile--now {
-  background: rgba(201,168,76,0.07) !important;
-  border: 1px solid rgba(201,168,76,0.4) !important;
-  color: #C9A84C !important;
+  background: rgba(181,146,77,0.1) !important;
+  border: 1px solid var(--gold-accent) !important;
+  color: var(--olive) !important;
   font-weight: 600 !important;
 }
 
 .react-calendar__tile--now.react-calendar__tile--active {
-  background: linear-gradient(135deg, #C9A84C, #9A7A2E) !important;
-  color: #0A0A0A !important;
+  background: var(--olive) !important;
+  color: var(--cream) !important;
   border-color: transparent !important;
 }
 
 .react-calendar__tile:disabled {
-  color: rgba(245,240,232,0.18) !important;
+  color: rgba(23,27,22,0.15) !important;
   background: transparent !important;
   border-color: transparent !important;
   cursor: not-allowed !important;
@@ -185,5 +197,5 @@ h1, h2, h3, h4 {
 
 /* Neighbor month days */
 .react-calendar__month-view__days__day--neighboringMonth {
-  color: rgba(245,240,232,0.2) !important;
+  color: rgba(23,27,22,0.2) !important;
 }

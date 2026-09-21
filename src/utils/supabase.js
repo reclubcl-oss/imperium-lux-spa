@@ -9,21 +9,27 @@ const isConfigured = clean(SUPABASE_URL).startsWith('https://') && clean(SUPABAS
 export const supabase = isConfigured ? createClient(clean(SUPABASE_URL), clean(SUPABASE_KEY)) : null;
 
 /**
- * Guarda una reserva en la tabla "reservas" de Supabase.
+ * Guarda una reserva. Pasa por /api/create-reservation (usa la Service Role Key
+ * en el servidor) en vez de insertar directo desde el navegador con la anon key,
+ * para no depender de la política RLS de INSERT público en `reservas`.
  */
-export async function saveReservation({ nombre, email, telefono, servicio, fecha, hora, notas }) {
-  if (!supabase) { console.warn('Supabase no configurado'); return { success: false, error: 'Supabase no configurado' }; }
-
-  const { data, error } = await supabase
-    .from('reservas')
-    .insert([{ nombre, email, telefono, servicio, fecha, hora, notas: notas || '' }])
-    .select();
-
-  if (error) {
-    console.error('Supabase error:', error);
-    return { success: false, error: error.message };
+export async function saveReservation({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId, aceptaPromos }) {
+  try {
+    const res = await fetch('/api/create-reservation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, email, telefono, servicio, fecha, fechaIso, hora, notas, staffId, aceptaPromos }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      console.error('Reservation error:', json.error);
+      return { success: false, error: json.error || `Error ${res.status}` };
+    }
+    return { success: true, data: json.data, manageUrl: json.manageUrl || null, clientEmailSent: !!json.clientEmailSent };
+  } catch (err) {
+    console.error('Reservation error:', err);
+    return { success: false, error: err.message };
   }
-  return { success: true, data };
 }
 
 /**
@@ -34,7 +40,7 @@ export async function getReservations() {
 
   const { data, error } = await supabase
     .from('reservas')
-    .select('*')
+    .select('*, staff(nombre)')
     .order('created_at', { ascending: false });
 
   if (error) return { success: false, error: error.message, data: [] };
