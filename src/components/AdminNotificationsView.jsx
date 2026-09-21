@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../utils/supabase';
 import { getCurrentSubscription } from '../utils/push';
 
@@ -68,6 +69,7 @@ export default function AdminNotificationsView() {
   const [channels, setChannels] = useState({ push: true, email: false });
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState(null);
+  const [confirmText, setConfirmText] = useState(null);
 
   const loadCounts = () => {
     supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }).then(({ count, error }) => setDevices(error ? null : count));
@@ -84,14 +86,19 @@ export default function AdminNotificationsView() {
   const usePush = channels.push;
   const ready = form.title.trim() && form.body.trim() && (usePush || useEmail);
 
+  // La confirmación es propia (no window.confirm): los navegadores pueden
+  // bloquear los diálogos nativos y el botón parecería no hacer nada.
+  const askConfirm = () => {
+    if (!ready || busy) return;
+    const parts = [];
+    if (usePush) parts.push(devices === 1 ? '1 dispositivo (notificación)' : `${devices ?? 'todos los'} dispositivos (notificación)`);
+    if (useEmail) parts.push(mail.audience === 1 ? '1 clienta (correo)' : `${mail.audience ?? 0} clientas (correo)`);
+    setConfirmText(parts.join(' y '));
+  };
+
   const run = async (test) => {
     if (!ready || busy) return;
-    if (!test) {
-      const parts = [];
-      if (usePush) parts.push(`${devices ?? 'todos los'} dispositivos (notificación)`);
-      if (useEmail) parts.push(`${mail.audience ?? 0} clientas (correo)`);
-      if (!window.confirm(`Se enviará a: ${parts.join(' y ')}. No se puede deshacer. ¿Continuar?`)) return;
-    }
+    setConfirmText(null);
     setBusy(true);
     setResults(null);
     const out = {};
@@ -197,7 +204,7 @@ export default function AdminNotificationsView() {
       )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        <button type="button" disabled={!canSend} onClick={() => run(false)}
+        <button type="button" disabled={!canSend} onClick={askConfirm}
           style={{ background: canSend ? 'var(--olive)' : 'var(--border)', color: canSend ? 'var(--cream)' : 'var(--ink-soft)', border: 'none', padding: '13px 26px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 700, cursor: canSend ? 'pointer' : 'not-allowed' }}>
           {busy ? 'ENVIANDO...' : 'ENVIAR A TODOS'}
         </button>
@@ -206,6 +213,26 @@ export default function AdminNotificationsView() {
           ENVIAR PRUEBA SOLO A MÍ
         </button>
       </div>
+      {!ready && (
+        <p style={{ ...small, fontSize: '0.78rem', color: '#9A6A1F', marginTop: '10px' }}>
+          Para enviar falta: {[!form.title.trim() && 'el título', !form.body.trim() && 'el mensaje', !(usePush || useEmail) && 'elegir al menos un canal'].filter(Boolean).join(', ')}.
+        </p>
+      )}
+
+      {confirmText && createPortal(
+        <div role="dialog" aria-modal="true" onClick={() => setConfirmText(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(23,27,22,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--cream)', borderRadius: '16px', maxWidth: '400px', width: '100%', padding: '24px', boxShadow: '0 30px 70px rgba(23,27,22,0.3)' }}>
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--ink)', marginBottom: '10px' }}>¿Enviar ahora?</p>
+            <p style={{ ...small, fontSize: '0.88rem', marginBottom: '6px' }}>Se enviará a <strong style={{ color: 'var(--ink)' }}>{confirmText}</strong>.</p>
+            <p style={{ ...small, marginBottom: '20px' }}>No se puede deshacer.</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setConfirmText(null)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)', padding: '11px 20px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>CANCELAR</button>
+              <button type="button" autoFocus onClick={() => run(false)} style={{ background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '11px 22px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>SÍ, ENVIAR</button>
+            </div>
+          </div>
+        </div>, document.body)}
+
       <p style={{ ...small, fontSize: '0.74rem', marginTop: '10px' }}>
         La prueba llega a este dispositivo{usePush ? ' (si activaste las notificaciones aquí)' : ''}{useEmail ? ' y a tu correo de administrador' : ''}. Nadie más la recibe.
       </p>
