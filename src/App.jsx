@@ -37,6 +37,12 @@ function Layout() {
 
   useEffect(() => {
     document.title = PAGE_TITLES[pathname] || PAGE_TITLES['/'];
+    // Cada página declara su propia dirección canónica (antes todas apuntaban a la portada).
+    const url = `${window.location.origin}${pathname === '/' ? '/' : pathname}`;
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = url;
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
     if (pathname !== '/admin' && pathname !== '/intranet') trackPageView(pathname);
   }, [pathname]);
 

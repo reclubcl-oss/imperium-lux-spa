@@ -125,7 +125,7 @@ function StepLabel({ number, text }) {
       }}>
         <span style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '0.9rem', fontWeight: 700 }}>{number}</span>
       </div>
-      <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.2rem', fontWeight: 400 }}>{text}</h3>
+      <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.2rem', fontWeight: 400 }}>{text}</h2>
     </div>
   );
 }

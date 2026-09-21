@@ -88,6 +88,8 @@ export default function BookingCalendar({ onSelect }) {
       }}>
         <Calendar
           onChange={handleDateChange}
+          prevAriaLabel="Mes anterior"
+          nextAriaLabel="Mes siguiente"
           value={selectedDate}
           tileDisabled={isDisabled}
           minDate={today}
