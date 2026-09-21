@@ -13,28 +13,28 @@
 // encontró una foto de banco libre que las representara bien sin repetir
 // otra ya usada) — caen al default de su categoría (categoryDefaults.js).
 
-import hidratacionProfunda from '../assets/treatments/hidratacion-profunda.jpg';
-import radiofrecuenciaFacial from '../assets/treatments/radiofrecuencia-facial.jpg';
-import mesoterapia from '../assets/treatments/mesoterapia.jpg';
-import botoxRellenos from '../assets/treatments/botox-rellenos.jpg';
-import plasmaRicoPlaquetas from '../assets/treatments/plasma-rico-plaquetas.jpg';
-import hilosTensores from '../assets/treatments/hilos-tensores.jpg';
-import bioestimuladores from '../assets/treatments/bioestimuladores.jpg';
-import reduccionMedidas from '../assets/treatments/reduccion-medidas.jpg';
-import drenajeLinfatico from '../assets/treatments/drenaje-linfatico.jpg';
-import cavitacion from '../assets/treatments/cavitacion.jpg';
-import presoterapia from '../assets/treatments/presoterapia.jpg';
-import laserDepilacion from '../assets/treatments/laser-depilacion.jpg';
-import ultrasonidoFocalizado from '../assets/treatments/ultrasonido-focalizado.jpg';
-import luzPulsadaIPL from '../assets/treatments/luz-pulsada-ipl.jpg';
-import masajesTerapeuticos from '../assets/treatments/masajes-terapeuticos.jpg';
-import ritualDeOro from '../assets/treatments/ritual-de-oro.jpg';
-import aromaterapia from '../assets/treatments/aromaterapia.jpg';
-import envolturaCorporal from '../assets/treatments/envoltura-corporal.jpg';
-import disenoCejas from '../assets/treatments/diseno-cejas.jpg';
-import pestanas from '../assets/treatments/pestanas.jpg';
-import perfiladoLabios from '../assets/treatments/perfilado-labios.jpg';
-import contornoOjos from '../assets/treatments/contorno-ojos.jpg';
+import hidratacionProfunda from '../assets/treatments/hidratacion-profunda.webp';
+import radiofrecuenciaFacial from '../assets/treatments/radiofrecuencia-facial.webp';
+import mesoterapia from '../assets/treatments/mesoterapia.webp';
+import botoxRellenos from '../assets/treatments/botox-rellenos.webp';
+import plasmaRicoPlaquetas from '../assets/treatments/plasma-rico-plaquetas.webp';
+import hilosTensores from '../assets/treatments/hilos-tensores.webp';
+import bioestimuladores from '../assets/treatments/bioestimuladores.webp';
+import reduccionMedidas from '../assets/treatments/reduccion-medidas.webp';
+import drenajeLinfatico from '../assets/treatments/drenaje-linfatico.webp';
+import cavitacion from '../assets/treatments/cavitacion.webp';
+import presoterapia from '../assets/treatments/presoterapia.webp';
+import laserDepilacion from '../assets/treatments/laser-depilacion.webp';
+import ultrasonidoFocalizado from '../assets/treatments/ultrasonido-focalizado.webp';
+import luzPulsadaIPL from '../assets/treatments/luz-pulsada-ipl.webp';
+import masajesTerapeuticos from '../assets/treatments/masajes-terapeuticos.webp';
+import ritualDeOro from '../assets/treatments/ritual-de-oro.webp';
+import aromaterapia from '../assets/treatments/aromaterapia.webp';
+import envolturaCorporal from '../assets/treatments/envoltura-corporal.webp';
+import disenoCejas from '../assets/treatments/diseno-cejas.webp';
+import pestanas from '../assets/treatments/pestanas.webp';
+import perfiladoLabios from '../assets/treatments/perfilado-labios.webp';
+import contornoOjos from '../assets/treatments/contorno-ojos.webp';
 
 export const TREATMENT_DEFAULT_IMAGE = {
   'Hidratación Profunda':      hidratacionProfunda,

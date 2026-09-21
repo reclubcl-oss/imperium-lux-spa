@@ -5,17 +5,27 @@ import Location from '../components/Location';
 import PromoPopup from '../components/PromoPopup';
 import LoyaltySection from '../components/LoyaltySection';
 import FadeImage from '../components/FadeImage';
-import cienciaImg from '../assets/brand/ciencia.jpg';
+import cienciaImg from '../assets/brand/ciencia.webp';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
-const stats = [
-  { number: '500+', label: 'Clientes Satisfechos' },
-  { number: '15+',  label: 'Tratamientos Exclusivos' },
-  { number: '5★',   label: 'Valoración Media' },
-  { number: '3+',   label: 'Años de Experiencia' },
-];
+import { getActiveServices } from '../utils/services';
 
 export default function Home() {
+  // Solo cifras verificables: la cantidad de tratamientos sale en vivo de la
+  // base de datos, y el resto son datos fijos del servicio. Si más adelante
+  // quieres mostrar "clientes atendidos" o "años de experiencia", agrega esas
+  // cifras acá con los números reales.
+  const [treatmentCount, setTreatmentCount] = useState(null);
+  useEffect(() => {
+    getActiveServices().then(res => { if (res.success) setTreatmentCount(res.data.length); });
+  }, []);
+
+  const stats = [
+    ...(treatmentCount ? [{ number: treatmentCount, label: 'Tratamientos disponibles' }] : []),
+    { number: '6', label: 'Días de atención a la semana' },
+    { number: '1 a 1', label: 'Atención personalizada' },
+  ];
+
   return (
     <>
       <PromoPopup />
@@ -24,7 +34,7 @@ export default function Home() {
 
       {/* Stats */}
       <section style={{ background: 'var(--cream)', padding: 'clamp(40px,7vw,64px) 16px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
           {stats.map(({ number, label }) => (
             <div key={label}>
               <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 400, marginBottom: '6px' }}>{number}</p>

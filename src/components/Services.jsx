@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import SectionDivider from './SectionDivider';
 import { getActiveServices } from '../utils/services';
 import { CATEGORY_DEFAULT_IMAGE } from '../utils/categoryDefaults';
 import { TREATMENT_DEFAULT_IMAGE } from '../utils/treatmentDefaults';
 import { formatCLP } from '../utils/format';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 // Mismo número que aparece en el pie de página (+56 9 7149 4060), en formato
 // internacional sin espacios ni símbolos, como lo pide el link de WhatsApp.
@@ -56,6 +57,9 @@ const whatsappHref = (nombre) => {
 // ir directo a reservar. Así el cliente ve bien de qué se trata antes de
 // decidir entre agendar de una vez o preguntar primero por WhatsApp.
 function TreatmentDetailModal({ service, imageSrc, onClose }) {
+  const cardRef = useRef(null);
+  useFocusTrap(cardRef);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     const onKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
@@ -68,10 +72,10 @@ function TreatmentDetailModal({ service, imageSrc, onClose }) {
 
   return (
     <div
-      role="dialog" aria-modal="true" onClick={onClose}
+      role="dialog" aria-modal="true" aria-label={service.nombre} onClick={onClose}
       style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(23,27,22,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', animation: 'treatmentModalFadeIn 0.2s ease' }}
     >
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--cream)', borderRadius: '20px', width: '100%', maxWidth: '440px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 30px 70px rgba(23,27,22,0.3)', animation: 'treatmentModalPop 0.25s cubic-bezier(0.34,1.56,0.64,1)' }}>
+      <div ref={cardRef} tabIndex={-1} onClick={e => e.stopPropagation()} style={{ outline: 'none', background: 'var(--cream)', borderRadius: '20px', width: '100%', maxWidth: '440px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 30px 70px rgba(23,27,22,0.3)', animation: 'treatmentModalPop 0.25s cubic-bezier(0.34,1.56,0.64,1)' }}>
         <div style={{ position: 'relative' }}>
           {imageSrc
             ? <TreatmentImage src={imageSrc} alt={service.nombre} radius="20px 20px 0 0" />

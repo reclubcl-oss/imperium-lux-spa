@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Booking from './pages/Booking';
-import Admin from './pages/Admin';
-import Intranet from './pages/Intranet';
 import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
 import Privacidad from './pages/Privacidad';
 import LinkHub from './pages/LinkHub';
+
+// El panel admin y la intranet solo los usa el equipo — no tiene sentido
+// que cada visitante descargue ese código para ver la página de inicio.
+const Admin = lazy(() => import('./pages/Admin'));
+const Intranet = lazy(() => import('./pages/Intranet'));
 import { initAnalytics, trackPageView } from './utils/analytics';
 import './index.css';
 
@@ -59,6 +62,7 @@ function Layout() {
     <>
       {!isBare && <Navbar />}
       <main>
+        <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
         <Routes>
           <Route path="/"         element={<Home />} />
           <Route path="/reservar" element={<Booking />} />
@@ -69,6 +73,7 @@ function Layout() {
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/link" element={<LinkHub />} />
         </Routes>
+        </Suspense>
       </main>
       {!isBare && <Footer />}
     </>

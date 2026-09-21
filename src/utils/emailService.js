@@ -5,7 +5,7 @@ const TEMPLATE_ID_CLINIC   = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;       // 
 const TEMPLATE_ID_CLIENT   = 'template_r9y2ubi';                              // → cliente
 const PUBLIC_KEY           = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-export const CLINIC_EMAIL = import.meta.env.VITE_CLINIC_EMAIL || 'benjamin.tapia.r1@gmail.com';
+export const CLINIC_EMAIL = import.meta.env.VITE_CLINIC_EMAIL || 'clinicaimperiumvina@gmail.com';
 
 export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas, staffEmail, staffNombre }) {
   const params = {

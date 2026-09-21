@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/brand/logo.png';
-import heroPoster from '../assets/brand/hero.jpg';
+import heroPoster from '../assets/brand/hero.webp';
 import { getActiveLinks } from '../utils/links';
 
 // Landing tipo "link in bio" para poner en la descripción de Instagram —

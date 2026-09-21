@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import heroPoster from '../assets/brand/hero.jpg';
+import heroPoster from '../assets/brand/hero.webp';
 
 const FEATURES = [
   {

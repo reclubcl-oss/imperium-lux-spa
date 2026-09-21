@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { formatCLP } from '../utils/format';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 /**
  * Selector de tratamiento con diseño propio — reemplaza el <select> nativo,
@@ -11,6 +12,7 @@ import { formatCLP } from '../utils/format';
 export default function TreatmentSelect({ groupedServices, value, onChange, placeholder = 'Selecciona un tratamiento' }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
+  useFocusTrap(panelRef, open);
 
   const selected = groupedServices.flatMap(g => g.items).find(s => s.nombre === value);
   const isOtro = value === 'Otro (indicar en notas)';
@@ -65,11 +67,11 @@ export default function TreatmentSelect({ groupedServices, value, onChange, plac
 
       {open && (
         <div
-          role="dialog" aria-modal="true"
+          role="dialog" aria-modal="true" aria-label="Elige tu tratamiento"
           onClick={() => setOpen(false)}
           className="treatment-select-backdrop"
         >
-          <div ref={panelRef} onClick={e => e.stopPropagation()} className="treatment-select-panel">
+          <div ref={panelRef} tabIndex={-1} onClick={e => e.stopPropagation()} className="treatment-select-panel" style={{ outline: "none" }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid var(--border-soft)' }}>
               <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.1rem', fontWeight: 400 }}>Elige tu tratamiento</p>
               <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar"
