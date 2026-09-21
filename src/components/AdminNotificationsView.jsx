@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { supabase } from '../utils/supabase';
 import { getCurrentSubscription } from '../utils/push';
+import ConfirmDialog from './ConfirmDialog';
 
 const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', fontFamily: 'var(--font-sans)', fontSize: '0.88rem', color: 'var(--ink)', width: '100%' };
 const labelStyle = { display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--ink-soft)', marginBottom: '4px', fontFamily: 'var(--font-sans)', letterSpacing: '0.08em' };
@@ -219,19 +219,10 @@ export default function AdminNotificationsView() {
         </p>
       )}
 
-      {confirmText && createPortal(
-        <div role="dialog" aria-modal="true" onClick={() => setConfirmText(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(23,27,22,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--cream)', borderRadius: '16px', maxWidth: '400px', width: '100%', padding: '24px', boxShadow: '0 30px 70px rgba(23,27,22,0.3)' }}>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--ink)', marginBottom: '10px' }}>¿Enviar ahora?</p>
-            <p style={{ ...small, fontSize: '0.88rem', marginBottom: '6px' }}>Se enviará a <strong style={{ color: 'var(--ink)' }}>{confirmText}</strong>.</p>
-            <p style={{ ...small, marginBottom: '20px' }}>No se puede deshacer.</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => setConfirmText(null)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)', padding: '11px 20px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>CANCELAR</button>
-              <button type="button" autoFocus onClick={() => run(false)} style={{ background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '11px 22px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>SÍ, ENVIAR</button>
-            </div>
-          </div>
-        </div>, document.body)}
+      <ConfirmDialog open={!!confirmText} title="¿Enviar ahora?" confirmLabel="SÍ, ENVIAR" onConfirm={() => run(false)} onCancel={() => setConfirmText(null)}>
+        <p>Se enviará a <strong style={{ color: 'var(--ink)' }}>{confirmText}</strong>.</p>
+        <p style={{ marginTop: '4px' }}>No se puede deshacer.</p>
+      </ConfirmDialog>
 
       <p style={{ ...small, fontSize: '0.74rem', marginTop: '10px' }}>
         La prueba llega a este dispositivo{usePush ? ' (si activaste las notificaciones aquí)' : ''}{useEmail ? ' y a tu correo de administrador' : ''}. Nadie más la recibe.

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllLinks, createLink, updateLink, toggleLinkActivo, deleteLink, moveLink } from '../utils/links';
+import ConfirmDialog from './ConfirmDialog';
 
 const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 12px', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' };
 
@@ -30,8 +31,9 @@ function LinkRow({ link, allLinks, isFirst, isLast, onSaved }) {
     onSaved();
   };
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const remove = async () => {
-    if (!window.confirm(`¿Eliminar el enlace "${link.titulo}"? Esta acción no se puede deshacer.`)) return;
+    setConfirmingDelete(false);
     await deleteLink(link.id);
     onSaved();
   };
@@ -67,10 +69,13 @@ function LinkRow({ link, allLinks, isFirst, isLast, onSaved }) {
             <button onClick={toggleActivo} style={{ ...actionBtn, color: link.activo ? '#B3413A' : 'var(--olive)' }}>
               {link.activo ? 'Desactivar' : 'Activar'}
             </button>
-            <button onClick={remove} style={{ ...actionBtn, color: '#B3413A' }}>Eliminar</button>
+            <button onClick={() => setConfirmingDelete(true)} style={{ ...actionBtn, color: '#B3413A' }}>Eliminar</button>
           </div>
         </div>
       )}
+      <ConfirmDialog open={confirmingDelete} title="¿Eliminar este enlace?" confirmLabel="SÍ, ELIMINAR" danger onConfirm={remove} onCancel={() => setConfirmingDelete(false)}>
+        <p><strong style={{ color: 'var(--ink)' }}>{link.titulo}</strong> dejará de aparecer en tu página de enlaces. No se puede deshacer.</p>
+      </ConfirmDialog>
     </div>
   );
 }
