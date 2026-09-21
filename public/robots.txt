@@ -2,7 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /intranet
-Disallow: /prueba-push
 Disallow: /api/
 
 Sitemap: https://imperium-lux-spa.vercel.app/sitemap.xml

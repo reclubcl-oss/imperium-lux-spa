@@ -7,7 +7,6 @@ import Booking from './pages/Booking';
 import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
 import Privacidad from './pages/Privacidad';
-import PruebaPush from './pages/PruebaPush';
 import LinkHub from './pages/LinkHub';
 
 // El panel admin y la intranet solo los usa el equipo — no tiene sentido
@@ -72,7 +71,6 @@ function Layout() {
           <Route path="/fidelidad" element={<Loyalty />} />
           <Route path="/creditos" element={<Creditos />} />
           <Route path="/privacidad" element={<Privacidad />} />
-          <Route path="/prueba-push" element={<PruebaPush />} />
           <Route path="/link" element={<LinkHub />} />
         </Routes>
         </Suspense>
