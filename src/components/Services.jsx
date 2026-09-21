@@ -5,11 +5,8 @@ import { getActiveServices } from '../utils/services';
 import { CATEGORY_DEFAULT_IMAGE } from '../utils/categoryDefaults';
 import { TREATMENT_DEFAULT_IMAGE } from '../utils/treatmentDefaults';
 import { formatCLP } from '../utils/format';
+import { whatsappLink } from '../utils/contact';
 import { useFocusTrap } from '../utils/useFocusTrap';
-
-// Mismo número que aparece en el pie de página (+56 9 7149 4060), en formato
-// internacional sin espacios ni símbolos, como lo pide el link de WhatsApp.
-const WHATSAPP_NUMBER = '56971494060';
 
 // true en pantallas de celular (<= 640px); se actualiza si giras el teléfono.
 function useIsMobile() {
@@ -65,10 +62,7 @@ function TreatmentImage({ src, alt, radius }) {
   );
 }
 
-const whatsappHref = (nombre) => {
-  const text = `Hola! Me gustaría más información sobre ${nombre}.`;
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-};
+const whatsappHref = (nombre) => whatsappLink(`Hola! Me gustaría más información sobre ${nombre}.`);
 
 // Ficha del tratamiento — se abre al tocar la foto en la grilla, en vez de
 // ir directo a reservar. Así el cliente ve bien de qué se trata antes de

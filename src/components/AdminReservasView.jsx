@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
 import { updateReservationPrecio } from '../utils/finance';
 import Icon from './icons';
+import ConfirmDialog from './ConfirmDialog';
+import AdminReservaDialog from './AdminReservaDialog';
+import { adminReservaAction } from '../utils/adminReservas';
+import { getActiveServices } from '../utils/services';
 
 const SERIF = 'var(--font-serif)';
 const SANS = 'var(--font-sans)';
@@ -133,11 +137,27 @@ const Pill = ({ children }) => (
   <span style={{ background: 'rgba(38,58,34,0.07)', color: 'var(--olive)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 600, fontFamily: SANS, whiteSpace: 'nowrap' }}>{children}</span>
 );
 
+function RowActions({ r, busy, onReschedule, onCancel }) {
+  const btn = { background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px 12px', fontFamily: SANS, fontSize: '0.72rem', fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' };
+  return (
+    <span style={{ display: 'inline-flex', gap: '8px' }}>
+      <button type="button" disabled={busy} onClick={onReschedule} aria-label={`Cambiar la hora de ${r.nombre}`} style={{ ...btn, color: 'var(--olive)' }}>Cambiar hora</button>
+      <button type="button" disabled={busy} onClick={onCancel} aria-label={`Cancelar la reserva de ${r.nombre}`} style={{ ...btn, color: '#B3413A', borderColor: 'rgba(179,65,58,0.3)' }}>Cancelar</button>
+    </span>
+  );
+}
+
 // ── Vista principal ─────────────────────────────────────────────────────────
-export default function AdminReservasView({ reservations, loading, error, onPrecioSaved }) {
+export default function AdminReservasView({ reservations, loading, error, onPrecioSaved, onReload }) {
   const [filterService, setFilterService] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [search, setSearch] = useState('');
+  const [dialog, setDialog] = useState(null); // { mode: 'create' | 'reschedule', reservation? }
+  const [toCancel, setToCancel] = useState(null);
+  const [notifyCancel, setNotifyCancel] = useState(true);
+  const [services, setServices] = useState([]);
+  const [actionMsg, setActionMsg] = useState(null); // { ok, text }
+  const [busyId, setBusyId] = useState(null);
 
   const thisMonth = useMemo(() => {
     const now = new Date();
@@ -171,6 +191,27 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
   const hasFilters = search || filterService || filterDate;
   const clear = () => { setSearch(''); setFilterService(''); setFilterDate(''); };
 
+  const openCreate = async () => {
+    if (!services.length) { const res = await getActiveServices(); setServices(res.data || []); }
+    setDialog({ mode: 'create' });
+  };
+
+  const done = (res, okText) => {
+    setDialog(null);
+    setActionMsg({ ok: true, text: `${okText}${res.emailSent ? ' Se avisó a la clienta por correo.' : ''}` });
+    onReload?.();
+  };
+
+  const confirmCancel = async () => {
+    const r = toCancel;
+    setToCancel(null);
+    setBusyId(r.id);
+    const res = await adminReservaAction({ action: 'cancel', id: r.id, notify: notifyCancel });
+    setBusyId(null);
+    if (res.success) { setActionMsg({ ok: true, text: `Reserva de ${r.nombre} cancelada.${res.emailSent ? ' Se avisó a la clienta por correo.' : ''}` }); onReload?.(); }
+    else setActionMsg({ ok: false, text: res.error });
+  };
+
   if (loading) return <div style={{ textAlign: 'center', padding: '80px', color: 'var(--olive)', fontFamily: SANS }}>Cargando reservas...</div>;
 
   return (
@@ -200,10 +241,23 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px', gap: '12px' }}>
             <p style={{ fontFamily: SERIF, color: 'var(--ink)', fontSize: '1.2rem' }}>Lista de reservas</p>
-            <span style={{ fontFamily: SANS, color: 'var(--ink-soft)', fontSize: '0.78rem' }}>
-              <strong style={{ color: 'var(--olive)' }}>{filtered.length}</strong> resultado{filtered.length !== 1 ? 's' : ''}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span style={{ fontFamily: SANS, color: 'var(--ink-soft)', fontSize: '0.78rem' }}>
+                <strong style={{ color: 'var(--olive)' }}>{filtered.length}</strong> resultado{filtered.length !== 1 ? 's' : ''}
+              </span>
+              <button type="button" onClick={openCreate}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'var(--olive)', color: 'var(--cream)', border: 'none', padding: '9px 16px', borderRadius: '8px', fontFamily: SANS, fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer' }}>
+                <Icon name="plus" size={14} /> Nueva reserva
+              </button>
+            </div>
           </div>
+          {actionMsg && (
+            <div role="status" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '12px', padding: '10px 14px', borderRadius: '10px', fontFamily: SANS, fontSize: '0.82rem',
+              background: actionMsg.ok ? 'rgba(38,58,34,0.07)' : 'rgba(179,65,58,0.06)', border: `1px solid ${actionMsg.ok ? 'rgba(38,58,34,0.25)' : 'rgba(179,65,58,0.25)'}`, color: actionMsg.ok ? 'var(--olive)' : '#B3413A' }}>
+              <span>{actionMsg.text}</span>
+              <button type="button" onClick={() => setActionMsg(null)} aria-label="Cerrar aviso" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex' }}><Icon name="x" size={14} /></button>
+            </div>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
             <div style={{ position: 'relative', flex: '2 1 240px' }}>
               <span style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-soft)', display: 'flex' }}><Icon name="search" size={15} /></span>
@@ -232,7 +286,7 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'PROFESIONAL', 'PRECIO', 'TELÉFONO', 'CORREO'].map(h => <th key={h} style={th}>{h}</th>)}
+                    {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'PROFESIONAL', 'PRECIO', 'TELÉFONO', 'CORREO', ''].map(h => <th key={h} style={th}>{h}</th>)}
                   </tr>
                 </thead>
                 <tbody>
@@ -248,6 +302,7 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
                       <td style={td}><PrecioCell reservation={r} onSaved={onPrecioSaved} /></td>
                       <td style={td}>{r.telefono || '—'}</td>
                       <td style={td}>{r.email || '—'}</td>
+                      <td style={{ ...td, textAlign: 'right' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -279,12 +334,27 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
                       <PrecioCell reservation={r} onSaved={onPrecioSaved} />
                     </div>
                   </div>
+                  <div style={{ marginTop: '14px' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></div>
                 </div>
               ))}
             </div>
           </>
         )}
       </div>
+
+      {dialog && (
+        <AdminReservaDialog mode={dialog.mode} reservation={dialog.reservation} services={services} onClose={() => setDialog(null)}
+          onDone={(res) => done(res, dialog.mode === 'create' ? 'Reserva creada.' : 'Hora cambiada.')} />
+      )}
+
+      <ConfirmDialog open={!!toCancel} title="¿Cancelar esta reserva?" confirmLabel="SÍ, CANCELAR" cancelLabel="NO, MANTENERLA" danger onConfirm={confirmCancel} onCancel={() => setToCancel(null)}>
+        <p><strong style={{ color: 'var(--ink)' }}>{toCancel?.nombre}</strong> · {toCancel?.servicio}<br />{toCancel?.fecha}, {toCancel?.hora}</p>
+        <p style={{ marginTop: '8px' }}>Se libera la hora y no se puede deshacer.</p>
+        <label style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginTop: '12px', cursor: 'pointer' }}>
+          <input type="checkbox" checked={notifyCancel} onChange={e => setNotifyCancel(e.target.checked)} style={{ marginTop: '3px', accentColor: 'var(--olive)' }} />
+          <span>Avisar a la clienta por correo</span>
+        </label>
+      </ConfirmDialog>
     </>
   );
 }

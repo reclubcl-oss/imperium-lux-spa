@@ -317,13 +317,13 @@ function Dashboard({ onLogout }) {
     setReservations(prev => prev.map(r => r.id === id ? { ...r, precio } : r));
   };
 
-  useEffect(() => {
-    getReservations().then(({ success, data, error }) => {
-      if (success) setReservations(data);
-      else setError(error);
-      setLoading(false);
-    });
-  }, []);
+  const reload = () => getReservations().then(({ success, data, error }) => {
+    if (success) setReservations(data);
+    else setError(error);
+    setLoading(false);
+  });
+
+  useEffect(() => { reload(); }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', paddingTop: '0' }}>
@@ -383,7 +383,7 @@ function Dashboard({ onLogout }) {
         {tab === 'enlaces' && <AdminLinksView />}
         {tab === 'avisos' && <AdminNotificationsView />}
 
-        {tab === 'reservas' && <AdminReservasView reservations={reservations} loading={loading} error={error} onPrecioSaved={handlePrecioSaved} />}
+        {tab === 'reservas' && <AdminReservasView reservations={reservations} loading={loading} error={error} onPrecioSaved={handlePrecioSaved} onReload={reload} />}
       </div>
 
       <style>{`
