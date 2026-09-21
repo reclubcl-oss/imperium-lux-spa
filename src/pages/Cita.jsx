@@ -78,7 +78,7 @@ export default function Cita() {
   const detailBox = (fecha, hora, servicio) => (
     <div style={{ background: 'var(--border-soft)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', margin: '18px 0 22px' }}>
       <p style={{ fontFamily: SANS, color: 'var(--ink-soft)', fontSize: '0.66rem', letterSpacing: '0.14em', fontWeight: 600, marginBottom: '6px' }}>{servicio?.toUpperCase()}</p>
-      <p style={{ fontFamily: SANS, color: 'var(--olive)', fontWeight: 700, fontSize: '0.95rem', textTransform: 'capitalize' }}>{fecha}</p>
+      <p style={{ fontFamily: SANS, color: 'var(--olive)', fontWeight: 700, fontSize: '0.95rem' }}>{fecha ? fecha.charAt(0).toUpperCase() + fecha.slice(1) : ''}</p>
       <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.5rem' }}>{hora} hrs</p>
     </div>
   );
