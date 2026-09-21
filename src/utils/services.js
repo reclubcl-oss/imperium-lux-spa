@@ -23,12 +23,33 @@ export async function getAllServices() {
   return { success: true, data };
 }
 
-export async function uploadServiceImage(file, serviceId) {
+// Las fotos que llegan del celular o de un generador pesan 2–3 MB, y con 24
+// tratamientos eso hacía la página lentísima. Se reducen a un ancho de 1000 px y
+// se guardan como WebP (unos 40 KB) antes de subirlas. Si algo falla, se sube
+// el archivo original tal cual.
+async function compressImage(file, maxWidth = 1000, quality = 0.82) {
+  try {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxWidth / bitmap.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+    return blob && blob.size < file.size ? blob : file;
+  } catch {
+    return file;
+  }
+}
+
+export async function uploadServiceImage(originalFile, serviceId) {
   if (!supabase) return { success: false, error: 'Supabase no configurado' };
-  const ext = file.name.split('.').pop();
+  const file = await compressImage(originalFile);
+  const ext = file === originalFile ? originalFile.name.split('.').pop() : 'webp';
   const path = `${serviceId}-${Date.now()}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage.from('servicios').upload(path, file, { upsert: true });
+  const { error: uploadError } = await supabase.storage.from('servicios').upload(path, file, { upsert: true, cacheControl: '31536000', contentType: file.type || undefined });
   if (uploadError) return { success: false, error: uploadError.message };
 
   const { data } = supabase.storage.from('servicios').getPublicUrl(path);

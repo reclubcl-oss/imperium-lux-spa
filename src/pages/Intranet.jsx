@@ -137,7 +137,7 @@ function MiHorario({ staffId }) {
             const dayBlocks = blocks.filter(b => b.dia_semana === dia);
             return (
               <div key={dia} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid var(--border-soft)' }}>
-                <span style={{ width: '90px', flexShrink: 0, fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.8rem', fontWeight: 600 }}>{label}</span>
+                <span style={{ width: '90px', flexShrink: 0, fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.8rem', fontWeight: 600 }}>{label}</span>
                 {dayBlocks.length === 0 && <span style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.78rem' }}>Día libre</span>}
                 {dayBlocks.map(b => (
                   <span key={b.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--border-soft)', color: 'var(--ink)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.78rem', fontFamily: 'var(--font-sans)' }}>
@@ -250,7 +250,7 @@ function MisCitas({ staffId }) {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['FECHA', 'HORA', 'CLIENTE', 'SERVICIO', 'TELÉFONO'].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.62rem', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>

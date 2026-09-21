@@ -270,12 +270,12 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
                       ['mail', r.email || '—'],
                     ].map(([icon, text]) => (
                       <p key={icon} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: SANS, color: 'var(--ink-soft)', fontSize: '0.8rem', minWidth: 0 }}>
-                        <Icon name={icon} size={14} style={{ color: 'var(--gold-accent)' }} />
+                        <Icon name={icon} size={14} style={{ color: 'var(--gold-text)' }} />
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</span>
                       </p>
                     ))}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Icon name="tag" size={14} style={{ color: 'var(--gold-accent)' }} />
+                      <Icon name="tag" size={14} style={{ color: 'var(--gold-text)' }} />
                       <PrecioCell reservation={r} onSaved={onPrecioSaved} />
                     </div>
                   </div>

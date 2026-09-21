@@ -1,5 +1,44 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import heroPoster from '../assets/brand/hero.webp';
+import heroPoster from '../assets/brand/hero-poster.webp';
+
+// El video de portada pesa varios MB: si se descargara junto con la página, en
+// celular retrasaba todo lo demás (la foto principal aparecía a los ~12 s). Ahora
+// la imagen se muestra al instante y el video empieza a bajar recién cuando la
+// página terminó de cargar — y solo si la conexión lo permite (no con ahorro de
+// datos, ni en 2G/3G, ni si la persona pidió menos movimiento).
+function HeroVideo() {
+  const ref = useRef(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const video = ref.current;
+    const conn = navigator.connection;
+    const slow = conn && (conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || ''));
+    if (!video || slow || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let cancelled = false;
+    const start = () => {
+      if (cancelled) return;
+      video.src = '/imperium-hero.mp4';
+      video.play().catch(() => {});
+    };
+    const schedule = () => setTimeout(start, 800);
+    let timer;
+    if (document.readyState === 'complete') timer = schedule();
+    else window.addEventListener('load', () => { timer = schedule(); }, { once: true });
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)' }}>
+      <img src={heroPoster} alt="Clínica Estética Imperium" width="720" height="1280" fetchPriority="high" decoding="async"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <video ref={ref} muted loop playsInline preload="none" onPlaying={() => setPlaying(true)} aria-label="Video de Clínica Estética Imperium"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: playing ? 1 : 0, transition: 'opacity 0.6s ease' }} />
+    </div>
+  );
+}
 
 const FEATURES = [
   {
@@ -60,7 +99,7 @@ export default function Hero() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
               <div style={{ width: '28px', height: '2px', background: 'var(--gold-accent)' }} />
-              <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>
+              <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>
                 CLÍNICA ESTÉTICA IMPERIUM
               </p>
             </div>
@@ -97,8 +136,7 @@ export default function Hero() {
               border: '1.5px solid var(--gold-accent)', zIndex: 0,
             }} />
             <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 24px 60px rgba(23,27,22,0.14)', zIndex: 1 }}>
-              <video autoPlay muted loop playsInline poster={heroPoster} src="/imperium-video.mp4" aria-label="Video de Clínica Estética Imperium"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', aspectRatio: '1/1' }} />
+              <HeroVideo />
             </div>
           </div>
         </div>

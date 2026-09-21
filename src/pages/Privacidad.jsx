@@ -72,7 +72,7 @@ export default function Privacidad() {
   return (
     <section style={{ background: 'var(--cream-soft)', padding: 'clamp(80px,10vw,120px) 16px clamp(60px,8vw,90px)' }}>
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-        <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px', textAlign: 'center' }}>TUS DATOS, CON CUIDADO</p>
+        <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px', textAlign: 'center' }}>TUS DATOS, CON CUIDADO</p>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.4rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400, textAlign: 'center' }}>Política de Privacidad</h1>
         <SectionDivider margin="0 auto 20px" />
         <p style={{ ...bodyText, fontSize: '0.78rem', textAlign: 'center', marginBottom: '36px' }}>Última actualización: 21 de septiembre de 2026</p>
@@ -93,7 +93,7 @@ export default function Privacidad() {
         </div>
 
         <p style={{ textAlign: 'center', marginTop: '28px' }}>
-          <Link to="/reservar" style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>Volver a reservar →</Link>
+          <Link to="/reservar" style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>Volver a reservar →</Link>
         </p>
       </div>
     </section>

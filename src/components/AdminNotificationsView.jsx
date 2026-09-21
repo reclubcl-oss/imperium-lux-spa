@@ -250,7 +250,7 @@ export default function AdminNotificationsView() {
             <p style={{ ...labelStyle, marginBottom: '8px' }}>VISTA PREVIA · CORREO</p>
             <div style={{ background: '#FAF9F5', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}>
               <div style={{ background: '#FFFEFB', border: '1px solid var(--border-soft)', borderRadius: '10px', padding: '16px' }}>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6rem', letterSpacing: '0.2em', fontWeight: 700, color: 'var(--gold-accent)', marginBottom: '6px' }}>CLÍNICA ESTÉTICA IMPERIUM</p>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6rem', letterSpacing: '0.2em', fontWeight: 700, color: 'var(--gold-text)', marginBottom: '6px' }}>CLÍNICA ESTÉTICA IMPERIUM</p>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--forest)', marginBottom: '10px' }}>{form.title || 'Asunto del correo'}</p>
                 <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--ink-soft)', lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: '10px' }}>Hola María,{'\n\n'}{form.body || 'Aquí va tu mensaje.'}</p>
                 <span style={{ display: 'inline-block', background: 'var(--olive)', color: 'var(--cream)', borderRadius: '6px', padding: '7px 14px', fontFamily: 'var(--font-sans)', fontSize: '0.7rem', fontWeight: 700 }}>Ver más</span>

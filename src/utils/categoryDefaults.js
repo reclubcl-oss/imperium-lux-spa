@@ -3,12 +3,11 @@
 // (las mismas descargadas para el rediseño), reutilizadas por categoría afín.
 import faciales from '../assets/brand/faciales.webp';
 import corporales from '../assets/brand/corporales.webp';
-import hero from '../assets/brand/hero.webp';
 import ciencia from '../assets/brand/ciencia.webp';
 
 export const CATEGORY_DEFAULT_IMAGE = {
   'Tratamientos Faciales':   faciales,
-  'Medicina Estética':       hero,
+  'Medicina Estética':       ciencia,
   'Tratamientos Corporales': corporales,
   'Tecnología Avanzada':     ciencia,
   'Relajación & Spa':        corporales,

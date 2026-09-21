@@ -51,7 +51,7 @@ function ServiceCard({ service, onSaved }) {
             </span>
           </>
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold-accent)', fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Sin foto</div>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold-text)', fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Sin foto</div>
         )}
       </div>
 
@@ -70,7 +70,7 @@ function ServiceCard({ service, onSaved }) {
           </div>
         ) : (
           <>
-            {service.categoria && <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.1em', marginBottom: '4px' }}>{service.categoria.toUpperCase()}</p>}
+            {service.categoria && <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.62rem', letterSpacing: '0.1em', marginBottom: '4px' }}>{service.categoria.toUpperCase()}</p>}
             <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1rem' }}>{service.nombre}</p>
             <p style={{ fontFamily: 'var(--font-sans)', color: service.precio ? 'var(--olive)' : 'var(--ink-soft)', fontWeight: 700, fontSize: '0.85rem', marginBottom: '10px' }}>
               {service.precio ? formatCLP(service.precio) : 'Sin precio fijado'}

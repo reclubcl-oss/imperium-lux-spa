@@ -76,7 +76,7 @@ export default function AdminClientsView({ reservations }) {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['NOMBRE', 'EMAIL', 'TELÉFONO', 'VISITAS', 'ESTADO'].map(h => (
-                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em' }}>{h}</th>
+                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.62rem', letterSpacing: '0.12em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -91,7 +91,7 @@ export default function AdminClientsView({ reservations }) {
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontWeight: 700, fontSize: '0.95rem' }}>{c.visitas}</td>
                         <td style={{ padding: '12px 16px' }}>
                           {tienePremio ? (
-                            <span style={{ background: 'rgba(181,146,77,0.15)', color: 'var(--gold-accent)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                            <span style={{ background: 'rgba(181,146,77,0.15)', color: 'var(--gold-text)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                               🎁 Beneficio disponible
                             </span>
                           ) : (
@@ -119,7 +119,7 @@ export default function AdminClientsView({ reservations }) {
                     <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{c.email}</p>
                     <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', marginBottom: '8px' }}>{c.telefono || '—'}</p>
                     {tienePremio ? (
-                      <span style={{ background: 'rgba(181,146,77,0.15)', color: 'var(--gold-accent)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700 }}>
+                      <span style={{ background: 'rgba(181,146,77,0.15)', color: 'var(--gold-text)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700 }}>
                         🎁 Beneficio disponible
                       </span>
                     ) : (

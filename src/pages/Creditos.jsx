@@ -18,7 +18,7 @@ export default function Creditos() {
   return (
     <section style={{ background: 'var(--cream-soft)', padding: 'clamp(80px,10vw,120px) 16px clamp(60px,8vw,90px)', minHeight: '60vh' }}>
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-        <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px', textAlign: 'center' }}>TRANSPARENCIA</p>
+        <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px', textAlign: 'center' }}>TRANSPARENCIA</p>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.4rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400, textAlign: 'center' }}>Créditos de Fotografías</h1>
         <SectionDivider margin="0 auto 24px" />
         <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.92rem', lineHeight: 1.8, marginBottom: '36px', textAlign: 'center' }}>
@@ -34,7 +34,7 @@ export default function Creditos() {
                 <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '0.95rem' }}>{c.treatment}</p>
                 <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', marginTop: '2px' }}>Foto: {c.author}</p>
               </div>
-              <span style={{ alignSelf: 'center', fontFamily: 'var(--font-sans)', fontSize: '0.68rem', letterSpacing: '0.05em', color: 'var(--gold-accent)', border: '1px solid var(--border)', borderRadius: '99px', padding: '4px 10px', whiteSpace: 'nowrap' }}>
+              <span style={{ alignSelf: 'center', fontFamily: 'var(--font-sans)', fontSize: '0.68rem', letterSpacing: '0.05em', color: 'var(--gold-text)', border: '1px solid var(--border)', borderRadius: '99px', padding: '4px 10px', whiteSpace: 'nowrap' }}>
                 {c.license}
               </span>
             </div>
@@ -42,7 +42,7 @@ export default function Creditos() {
         </div>
 
         <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', lineHeight: 1.7, marginTop: '24px', textAlign: 'center' }}>
-          Todas obtenidas a través de <a href="https://openverse.org" target="_blank" rel="noreferrer" style={{ color: 'var(--gold-accent)' }}>Openverse</a>.
+          Todas obtenidas a través de <a href="https://openverse.org" target="_blank" rel="noreferrer" style={{ color: 'var(--gold-text)' }}>Openverse</a>.
         </p>
       </div>
     </section>

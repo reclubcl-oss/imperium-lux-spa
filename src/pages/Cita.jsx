@@ -123,7 +123,7 @@ export default function Cita() {
     );
   } else {
     content = card(<>
-      <p style={{ color: 'var(--gold-accent)', fontSize: '0.7rem', letterSpacing: '0.2em', fontFamily: SANS, fontWeight: 700, marginBottom: '10px' }}>TU CITA</p>
+      <p style={{ color: 'var(--gold-text)', fontSize: '0.7rem', letterSpacing: '0.2em', fontFamily: SANS, fontWeight: 700, marginBottom: '10px' }}>TU CITA</p>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'clamp(1.5rem,4vw,1.9rem)', color: 'var(--ink)' }}>Hola, {appt.nombre}</h1>
       {detailBox(appt.fecha, appt.hora, appt.servicio)}
       {appt.past ? (

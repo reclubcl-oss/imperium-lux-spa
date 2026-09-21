@@ -29,7 +29,7 @@ export default function VideoSection() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(28px,5vw,48px)' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>NUESTRA COMUNIDAD</p>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>NUESTRA COMUNIDAD</p>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}>Gracias por su Confianza</h2>
           <SectionDivider margin="0 auto 14px" />
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: 'clamp(0.9rem,2vw,0.95rem)', lineHeight: 1.8, maxWidth: '440px', margin: '0 auto' }}>
@@ -39,7 +39,7 @@ export default function VideoSection() {
 
         {/* Video */}
         <div onClick={toggle} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)', boxShadow: '0 20px 48px rgba(23,27,22,0.1)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <video ref={videoRef} src="/imperium-video.mp4" playsInline onEnded={() => setPlaying(false)}
+          <video ref={videoRef} src="/imperium-video-web.mp4" preload="none" playsInline onEnded={() => setPlaying(false)}
             style={{ width: '100%', display: 'block', maxHeight: 'clamp(240px,60vw,520px)', objectFit: 'cover', background: 'var(--forest)' }} />
 
           {/* Play overlay */}

@@ -287,7 +287,7 @@ function StaffManager() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['NOMBRE', 'EMAIL', 'ESPECIALIDAD', 'ROL', 'ESTADO', ''].map(h => (
-                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em' }}>{h}</th>
+                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.62rem', letterSpacing: '0.12em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>

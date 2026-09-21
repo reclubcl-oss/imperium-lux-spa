@@ -106,7 +106,7 @@ function TreatmentDetailModal({ service, imageSrc, onClose }) {
 
         <div style={{ padding: '24px 26px 28px' }}>
           {service.categoria && (
-            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.65rem', letterSpacing: '0.12em', fontWeight: 700, marginBottom: '8px' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.65rem', letterSpacing: '0.12em', fontWeight: 700, marginBottom: '8px' }}>
               {service.categoria.toUpperCase()}
             </p>
           )}
@@ -190,7 +190,7 @@ export default function Services() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,48px)' }}>
-          <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>NUESTROS SERVICIOS</p>
+          <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>NUESTROS SERVICIOS</p>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400 }}>Tratamientos Exclusivos</h2>
           <SectionDivider margin="0 auto 16px" />
           <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: 'clamp(0.9rem,2vw,1rem)', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>

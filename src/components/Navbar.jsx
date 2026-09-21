@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import InstallApp from './InstallApp';
-import logo from '../assets/brand/logo.png';
+import logo from '../assets/brand/logo.webp';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);

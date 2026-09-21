@@ -7,7 +7,7 @@ export default function Location() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,6vw,52px)' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>ENCUÉNTRANOS</p>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>ENCUÉNTRANOS</p>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}>Nuestra Ubicación</h2>
           <SectionDivider margin="0 auto" />
         </div>
@@ -24,7 +24,7 @@ export default function Location() {
                   <span style={{ fontSize: '1rem' }}>📍</span>
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '6px' }}>DIRECCIÓN</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '6px' }}>DIRECCIÓN</p>
                   <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.92rem', lineHeight: 1.7 }}>
                     2 Oriente 124<br />Viña del Mar, Valparaíso<br />Chile
                   </p>
@@ -39,7 +39,7 @@ export default function Location() {
                   <span style={{ fontSize: '1rem' }}>🕐</span>
                 </div>
                 <div style={{ width: '100%' }}>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '10px' }}>HORARIOS</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '10px' }}>HORARIOS</p>
                   {[
                     { day: 'Lunes – Viernes', hours: '9:00 – 20:00' },
                     { day: 'Sábado',          hours: '9:00 – 18:00' },
@@ -72,6 +72,7 @@ export default function Location() {
               title="Clínica Estética Imperium – Ubicación"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3330.!2d-71.5365!3d-33.0245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9689dddfd649e6c9%3A0xe2034a9dc8967882!2s2%20Ote.%20124%2C%20Vi%C3%B1a%20del%20Mar%2C%20Valpara%C3%ADso!5e0!3m2!1ses!2scl!4v1712600000000!5m2!1ses!2scl"
               width="100%"
+              loading="lazy"
               style={{ border: 0, display: 'block', aspectRatio: '4/3', minHeight: '280px' }}
               allowFullScreen
               loading="lazy"

@@ -12,6 +12,8 @@
   --ink: #171B16;
   --ink-soft: #5B6558;
   --gold-accent: #B5924D;
+  /* Dorado para TEXTO sobre fondo claro (cumple contraste 4.5:1); --gold-accent queda para fondos oscuros y detalles */
+  --gold-text: #86672A;
 
   --font-serif: Georgia, 'Times New Roman', serif;
   --font-sans: -apple-system, 'system-ui', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

@@ -340,7 +340,7 @@ export default function Booking() {
 
       {/* Header */}
       <div style={{ textAlign: 'center', padding: '0 24px 44px' }}>
-        <p style={{ color: 'var(--gold-accent)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>
+        <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>
           RESERVA TU VISITA
         </p>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400 }}>
@@ -376,7 +376,7 @@ export default function Booking() {
                 padding: '18px 20px',
                 animation: 'fadeIn 0.3s ease',
               }}>
-                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.65rem', letterSpacing: '0.22em', marginBottom: '10px', fontWeight: 700 }}>TU SELECCIÓN</p>
+                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.65rem', letterSpacing: '0.22em', marginBottom: '10px', fontWeight: 700 }}>TU SELECCIÓN</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>📅</span> {formatDateES(selection.date)}
@@ -408,7 +408,7 @@ export default function Booking() {
               ].map(({ name, label, type, placeholder, required }) => (
                 <div key={name}>
                   <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '7px', fontWeight: 600 }}>
-                    {label} {required && <span style={{ color: 'var(--gold-accent)' }}>*</span>}
+                    {label} {required && <span style={{ color: 'var(--gold-text)' }}>*</span>}
                   </label>
                   <input
                     type={type} name={name} value={form[name]}
@@ -423,7 +423,7 @@ export default function Booking() {
               {/* Servicio */}
               <div>
                 <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '7px', fontWeight: 600 }}>
-                  TRATAMIENTO <span style={{ color: 'var(--gold-accent)' }}>*</span>
+                  TRATAMIENTO <span style={{ color: 'var(--gold-text)' }}>*</span>
                 </label>
                 <TreatmentSelect groupedServices={groupedServices} value={form.servicio} onChange={handleServicioChange} />
               </div>

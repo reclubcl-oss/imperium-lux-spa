@@ -117,7 +117,7 @@ export default function BookingCalendar({ onSelect }) {
           {/* Section label */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.68rem', letterSpacing: '0.22em', fontWeight: 700 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.68rem', letterSpacing: '0.22em', fontWeight: 700 }}>
               HORARIOS DISPONIBLES
             </p>
             <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />

@@ -83,7 +83,7 @@ export default function TreatmentSelect({ groupedServices, value, onChange, plac
             <div style={{ padding: '10px 14px 20px', overflowY: 'auto', flex: 1 }}>
               {groupedServices.map(g => (
                 <div key={g.categoria} style={{ marginBottom: '14px' }}>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', padding: '10px 10px 6px' }}>
+                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', padding: '10px 10px 6px' }}>
                     {g.categoria.toUpperCase()}
                   </p>
                   {g.items.map(s => (

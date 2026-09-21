@@ -24,7 +24,7 @@ export default function PromoPopup() {
 
   return (
     <div
-      role="dialog" aria-modal="true"
+      role="dialog" aria-modal="true" aria-label="Club de Beneficios"
       onClick={close}
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
@@ -59,7 +59,7 @@ export default function PromoPopup() {
 
         <div style={{ fontSize: '2.4rem', marginBottom: '14px' }}>🎁</div>
 
-        <p style={{ color: 'var(--gold-accent)', fontSize: '0.68rem', letterSpacing: '0.2em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '12px' }}>
+        <p style={{ color: 'var(--gold-text)', fontSize: '0.68rem', letterSpacing: '0.2em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '12px' }}>
           CLUB DE BENEFICIOS
         </p>
 

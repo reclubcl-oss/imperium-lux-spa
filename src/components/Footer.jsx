@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/brand/logo.png';
+import logo from '../assets/brand/logo.webp';
 import InstallApp from './InstallApp';
 
 export default function Footer() {
@@ -37,7 +37,7 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Enlaces</h4>
+            <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Enlaces</h3>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[['Inicio','/'],['Servicios','/#servicios'],['Reservar','/reservar'],['Fidelidad','/#fidelidad'],['Ubicación','/#ubicacion'],['Contacto','/#contacto']].map(([label,href]) => (
                 <li key={label}>
@@ -53,7 +53,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Contacto</h4>
+            <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Contacto</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
                 { icon: '📍', text: '2 Oriente 124, Viña del Mar' },
@@ -71,8 +71,8 @@ export default function Footer() {
 
           {/* Social */}
           <div>
-            <h4 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Redes Sociales</h4>
-            <a href="https://www.instagram.com/clinica.estetica.imperium" target="_blank" rel="noreferrer"
+            <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Redes Sociales</h3>
+            <a href="https://www.instagram.com/clinica.estetica.imperium" target="_blank" rel="noreferrer" aria-label="Instagram de Clínica Estética Imperium"
               style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', border: '1px solid rgba(255,254,251,0.3)', color: 'var(--cream)', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold-accent)'; e.currentTarget.style.color = 'var(--gold-accent)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,254,251,0.3)'; e.currentTarget.style.color = 'var(--cream)'; }}>
@@ -94,12 +94,12 @@ export default function Footer() {
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,254,251,0.12)', paddingTop: '20px', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.4)', fontSize: '0.78rem' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.7)', fontSize: '0.78rem' }}>
             © {new Date().getFullYear()} Clínica Estética Imperium. Todos los derechos reservados.
             {' · '}
-            <Link to="/privacidad" style={{ color: 'rgba(255,254,251,0.4)', textDecoration: 'underline' }}>Política de privacidad</Link>
+            <Link to="/privacidad" style={{ color: 'rgba(255,254,251,0.7)', textDecoration: 'underline' }}>Política de privacidad</Link>
             {' · '}
-            <Link to="/creditos" style={{ color: 'rgba(255,254,251,0.4)', textDecoration: 'underline' }}>Créditos de fotografías</Link>
+            <Link to="/creditos" style={{ color: 'rgba(255,254,251,0.7)', textDecoration: 'underline' }}>Créditos de fotografías</Link>
           </p>
         </div>
       </div>
