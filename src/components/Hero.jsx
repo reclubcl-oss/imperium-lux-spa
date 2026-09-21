@@ -33,6 +33,7 @@ function HeroVideo() {
     started.current = true;
     video.muted = true;
     video.defaultMuted = true;
+    video.setAttribute('muted', ''); // iOS lo exige como atributo para permitir el autoplay
     video.src = '/imperium-hero.mp4';
     video.load();
     video.play().catch(() => setNeedsTap(true));
