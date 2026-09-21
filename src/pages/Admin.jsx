@@ -1,21 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { getReservations } from '../utils/supabase';
 import { signIn, signOut, getMyStaffProfile } from '../utils/staffAuth';
 import { getAllStaff, updateStaffMember, createStaffMember } from '../utils/staffAdmin';
-import { updateReservationPrecio } from '../utils/finance';
 import AdminCalendarView from '../components/AdminCalendarView';
 import AdminFinanceView from '../components/AdminFinanceView';
 import AdminServicesView from '../components/AdminServicesView';
 import AdminClientsView from '../components/AdminClientsView';
 import AdminLinksView from '../components/AdminLinksView';
 import AdminNotificationsView from '../components/AdminNotificationsView';
+import AdminReservasView from '../components/AdminReservasView';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-const SERVICE_COLORS = [
-  '#263A22', '#B5924D', '#3A5432', '#8a9a7a',
-  '#6b8f71', '#a78b5f', '#4f6b52', '#c2a878',
-  '#5c7a5e', '#9c8560', '#3d5540', '#b09068',
-];
 
 // ─── Login Screen ────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
@@ -101,54 +96,6 @@ function LoginScreen({ onLogin }) {
 }
 
 // ─── Stat Card ───────────────────────────────────────────────────────────────
-function StatCard({ label, value, sub, icon }) {
-  return (
-    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '10px' }}>{label}</p>
-          <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: '2.4rem', fontWeight: 400, lineHeight: 1 }}>{value}</p>
-          {sub && <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.75rem', marginTop: '6px' }}>{sub}</p>}
-        </div>
-        <span style={{ fontSize: '1.6rem', opacity: 0.7 }}>{icon}</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Top Services Chart ──────────────────────────────────────────────────────
-function TopServices({ reservations }) {
-  const counts = useMemo(() => {
-    const map = {};
-    reservations.forEach(r => {
-      const s = r.servicio || 'Sin especificar';
-      map[s] = (map[s] || 0) + 1;
-    });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [reservations]);
-
-  const max = counts[0]?.[1] || 1;
-
-  return (
-    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
-      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '20px' }}>SERVICIOS MÁS RESERVADOS</p>
-      {counts.length === 0 && <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.85rem' }}>Sin datos aún</p>}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {counts.map(([name, count], i) => (
-          <div key={name}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.8rem', flex: 1, marginRight: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
-              <span style={{ fontFamily: 'var(--font-sans)', color: SERVICE_COLORS[i % SERVICE_COLORS.length], fontSize: '0.8rem', fontWeight: 700 }}>{count}</span>
-            </div>
-            <div style={{ height: '5px', background: 'var(--border-soft)', borderRadius: '99px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${(count / max) * 100}%`, background: SERVICE_COLORS[i % SERVICE_COLORS.length], borderRadius: '99px', transition: 'width 0.6s ease' }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── Gestión de Equipo ─────────────────────────────────────────────────────────
 const actionBtn = {
@@ -271,7 +218,7 @@ function AddStaffForm({ onCreated }) {
 
       {result && (
         <div style={{ background: 'rgba(181,146,77,0.1)', border: '1px solid var(--gold-accent)', borderRadius: '8px', padding: '14px 18px', marginBottom: '16px', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' }}>
-          ✅ Cuenta creada para <strong>{result.email}</strong>.<br/>
+          Cuenta creada para <strong>{result.email}</strong>.<br/>
           Contraseña temporal: <strong style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>{result.password}</strong>
           <p style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', marginTop: '6px' }}>Guarda o copia esta contraseña ahora — no se volverá a mostrar. Compártela con la persona por un canal seguro.</p>
         </div>
@@ -279,7 +226,7 @@ function AddStaffForm({ onCreated }) {
 
       {error && (
         <div style={{ background: 'rgba(179,65,58,0.06)', border: '1px solid rgba(179,65,58,0.25)', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', fontFamily: 'var(--font-sans)', color: '#B3413A', fontSize: '0.82rem' }}>
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
@@ -365,9 +312,6 @@ function Dashboard({ onLogout }) {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
-  const [filterService, setFilterService] = useState('');
-  const [filterDate, setFilterDate]       = useState('');
-  const [search, setSearch]               = useState('');
 
   const handlePrecioSaved = (id, precio) => {
     setReservations(prev => prev.map(r => r.id === id ? { ...r, precio } : r));
@@ -380,40 +324,6 @@ function Dashboard({ onLogout }) {
       setLoading(false);
     });
   }, []);
-
-  // Stats
-  const now = new Date();
-  const thisMonthReservations = useMemo(() =>
-    reservations.filter(r => {
-      const d = new Date(r.created_at);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }), [reservations]);
-
-  const todayReservations = useMemo(() =>
-    reservations.filter(r => {
-      const d = new Date(r.created_at);
-      return d.toDateString() === now.toDateString();
-    }), [reservations]);
-
-  // Unique services for filter
-  const allServices = useMemo(() => [...new Set(reservations.map(r => r.servicio).filter(Boolean))].sort(), [reservations]);
-
-  // Filtered table
-  const filtered = useMemo(() => reservations.filter(r => {
-    const matchService = !filterService || r.servicio === filterService;
-    const matchDate    = !filterDate    || (r.fecha && r.fecha.includes(filterDate));
-    const matchSearch  = !search        || [r.nombre, r.email, r.telefono, r.servicio].some(f => f?.toLowerCase().includes(search.toLowerCase()));
-    return matchService && matchDate && matchSearch;
-  }), [reservations, filterService, filterDate, search]);
-
-  // Most popular service
-  const topService = useMemo(() => {
-    const map = {};
-    reservations.forEach(r => { if (r.servicio) map[r.servicio] = (map[r.servicio] || 0) + 1; });
-    return Object.entries(map).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-  }, [reservations]);
-
-  const inputStyle = { background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 14px', color: 'var(--ink)', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', outline: 'none' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', paddingTop: '0' }}>
@@ -442,20 +352,24 @@ function Dashboard({ onLogout }) {
             {({ reservas: 'Dashboard de Reservas', calendario: 'Calendario', finanzas: 'Finanzas', servicios: 'Tratamientos', clientes: 'Clientes y Fidelidad', enlaces: 'Enlaces', avisos: 'Notificaciones', equipo: 'Gestión de Equipo' })[tab]}
           </h1>
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.82rem' }}>
-            {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {(d => d.charAt(0).toUpperCase() + d.slice(1))(new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))}
           </p>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        <div className="admin-tabs" style={{ display: 'flex', gap: '2px', marginBottom: '28px', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
           {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['enlaces', 'ENLACES'], ['avisos', 'NOTIFICACIONES'], ['equipo', 'EQUIPO']].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)} style={{
-              background: tab === key ? 'var(--border-soft)' : 'transparent',
+              background: 'transparent',
               color: tab === key ? 'var(--olive)' : 'var(--ink-soft)',
-              border: tab === key ? '1px solid var(--olive)' : '1px solid transparent',
-              padding: '8px 16px', borderRadius: '8px', fontFamily: 'var(--font-sans)',
-              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-            }}>
+              border: 'none',
+              borderBottom: tab === key ? '2px solid var(--olive)' : '2px solid transparent',
+              marginBottom: '-1px', padding: '12px 16px', fontFamily: 'var(--font-sans)',
+              fontSize: '0.74rem', letterSpacing: '0.08em', fontWeight: 700, cursor: 'pointer',
+              whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s',
+            }}
+              onMouseEnter={e => { if (tab !== key) e.currentTarget.style.color = 'var(--ink)'; }}
+              onMouseLeave={e => { if (tab !== key) e.currentTarget.style.color = 'var(--ink-soft)'; }}>
               {label}
             </button>
           ))}
@@ -469,188 +383,19 @@ function Dashboard({ onLogout }) {
         {tab === 'enlaces' && <AdminLinksView />}
         {tab === 'avisos' && <AdminNotificationsView />}
 
-        {tab === 'reservas' && (
-          <>
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '80px', color: 'var(--olive)', fontFamily: 'var(--font-sans)' }}>
-            Cargando reservas...
-          </div>
-        )}
-
-        {error && (
-          <div style={{ background: 'rgba(179,65,58,0.06)', border: '1px solid rgba(179,65,58,0.25)', borderRadius: '8px', padding: '16px 20px', marginBottom: '24px', fontFamily: 'var(--font-sans)', color: '#B3413A', fontSize: '0.85rem' }}>
-            ⚠️ Error al cargar datos: {error}
-            <br/><span style={{ opacity: 0.7, fontSize: '0.78rem' }}>Verifica que las credenciales de Supabase estén configuradas en el .env</span>
-          </div>
-        )}
-
-        {!loading && (
-          <>
-            {/* Stat cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,160px),1fr))', gap: '12px', marginBottom: '20px' }}>
-              <StatCard icon="📅" label="RESERVAS ESTE MES"   value={thisMonthReservations.length} sub={`de ${reservations.length} en total`} />
-              <StatCard icon="✨" label="RESERVAS HOY"        value={todayReservations.length}      sub="nuevas citas" />
-              <StatCard icon="💎" label="TOTAL RESERVAS"      value={reservations.length}           sub="desde el inicio" />
-              <StatCard icon="🏆" label="SERVICIO ESTRELLA"   value="★" sub={topService} />
-            </div>
-
-            {/* Charts + filters row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: '16px', marginBottom: '20px' }}>
-              <TopServices reservations={reservations} />
-
-              {/* Filters */}
-              <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px 28px' }}>
-                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', marginBottom: '20px' }}>FILTROS</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div>
-                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>BUSCAR</label>
-                    <input type="text" placeholder="Nombre, email, teléfono..." value={search} onChange={e => setSearch(e.target.value)}
-                      style={{ ...inputStyle, width: '100%' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>SERVICIO</label>
-                    <select value={filterService} onChange={e => setFilterService(e.target.value)} style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}>
-                      <option value="">Todos los servicios</option>
-                      {allServices.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', display: 'block', marginBottom: '5px' }}>FILTRAR POR TEXTO EN FECHA</label>
-                    <input type="text" placeholder="ej: abril, lunes, 2025..." value={filterDate} onChange={e => setFilterDate(e.target.value)}
-                      style={{ ...inputStyle, width: '100%' }} />
-                  </div>
-                  <button onClick={() => { setSearch(''); setFilterService(''); setFilterDate(''); }}
-                    style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink-soft)', padding: '8px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', cursor: 'pointer', marginTop: '4px' }}>
-                    LIMPIAR FILTROS
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em' }}>
-                  LISTA DE RESERVAS
-                </p>
-                <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-
-              {filtered.length === 0 ? (
-                <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: '0.88rem' }}>
-                  {reservations.length === 0 ? 'Aún no hay reservas registradas.' : 'No hay resultados con estos filtros.'}
-                </div>
-              ) : (
-                <>
-                  {/* Desktop table */}
-                  <div className="admin-table-desktop" style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                          {['FECHA', 'HORA', 'NOMBRE', 'SERVICIO', 'PROFESIONAL', 'PRECIO', 'TELÉFONO', 'EMAIL'].map(h => (
-                            <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.62rem', letterSpacing: '0.12em', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map((r, i) => (
-                          <tr key={r.id || i} style={{ borderBottom: '1px solid var(--border-soft)', transition: 'background 0.15s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--cream-soft)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                            <td style={tdStyle}>{r.fecha || '—'}</td>
-                            <td style={{ ...tdStyle, color: 'var(--olive)', fontWeight: 700 }}>{r.hora || '—'}</td>
-                            <td style={{ ...tdStyle, color: 'var(--ink)', fontWeight: 500 }}>{r.nombre || '—'}</td>
-                            <td style={tdStyle}>
-                              <span style={{ background: 'var(--border-soft)', color: 'var(--olive)', padding: '3px 8px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
-                                {r.servicio || '—'}
-                              </span>
-                            </td>
-                            <td style={tdStyle}>{r.staff?.nombre || '—'}</td>
-                            <td style={tdStyle}>
-                              <PrecioCell reservation={r} onSaved={handlePrecioSaved} />
-                            </td>
-                            <td style={tdStyle}>{r.telefono || '—'}</td>
-                            <td style={{ ...tdStyle, color: 'var(--ink-soft)' }}>{r.email || '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile cards */}
-                  <div className="admin-cards-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                    {filtered.map((r, i) => (
-                      <div key={r.id || i} style={{ padding: '16px', borderBottom: '1px solid var(--border-soft)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontWeight: 600, fontSize: '0.9rem' }}>{r.nombre || '—'}</p>
-                          <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontWeight: 700, fontSize: '0.9rem' }}>{r.hora || '—'}</span>
-                        </div>
-                        <span style={{ background: 'var(--border-soft)', color: 'var(--olive)', padding: '3px 10px', borderRadius: '99px', fontSize: '0.7rem', fontFamily: 'var(--font-sans)', display: 'inline-block', marginBottom: '8px' }}>
-                          {r.servicio || '—'}
-                        </span>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>📅 {r.fecha || '—'}</p>
-                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>💼 {r.staff?.nombre || 'sin asignar'}</p>
-                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>📞 {r.telefono || '—'}</p>
-                          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>✉️ {r.email || '—'}</p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                            <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>💰</span>
-                            <PrecioCell reservation={r} onSaved={handlePrecioSaved} />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </>
-        )}
-          </>
-        )}
+        {tab === 'reservas' && <AdminReservasView reservations={reservations} loading={loading} error={error} onPrecioSaved={handlePrecioSaved} />}
       </div>
 
       <style>{`
         select option { background: #FFFFFF; color: var(--ink); }
+        .admin-tabs { scrollbar-width: none; }
+        .admin-tabs::-webkit-scrollbar { display: none; }
         @media (min-width: 640px) { .admin-cards-mobile { display: none !important; } }
         @media (max-width: 639px) { .admin-table-desktop { display: none !important; } }
       `}</style>
     </div>
   );
 }
-
-function PrecioCell({ reservation, onSaved }) {
-  const [value, setValue] = useState(reservation.precio ?? '');
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    const num = value === '' ? null : Number(value);
-    setSaving(true);
-    await updateReservationPrecio(reservation.id, num);
-    setSaving(false);
-    onSaved(reservation.id, num);
-  };
-
-  return (
-    <input
-      type="number" min="0" placeholder="—" value={value}
-      onChange={e => setValue(e.target.value)}
-      onBlur={save}
-      disabled={saving}
-      style={{ width: '90px', background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: 'var(--ink)' }}
-    />
-  );
-}
-
-const tdStyle = {
-  padding: '14px 20px',
-  fontFamily: 'var(--font-sans)',
-  color: 'var(--ink-soft)',
-  fontSize: '0.82rem',
-  whiteSpace: 'nowrap',
-};
 
 // ─── Page export ─────────────────────────────────────────────────────────────
 export default function Admin() {
