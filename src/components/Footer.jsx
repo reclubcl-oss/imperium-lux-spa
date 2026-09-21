@@ -91,6 +91,8 @@ export default function Footer() {
           <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.4)', fontSize: '0.78rem' }}>
             © {new Date().getFullYear()} Clínica Estética Imperium. Todos los derechos reservados.
             {' · '}
+            <Link to="/privacidad" style={{ color: 'rgba(255,254,251,0.4)', textDecoration: 'underline' }}>Política de privacidad</Link>
+            {' · '}
             <Link to="/creditos" style={{ color: 'rgba(255,254,251,0.4)', textDecoration: 'underline' }}>Créditos de fotografías</Link>
           </p>
         </div>

@@ -8,6 +8,7 @@ import Admin from './pages/Admin';
 import Intranet from './pages/Intranet';
 import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
+import Privacidad from './pages/Privacidad';
 import LinkHub from './pages/LinkHub';
 import { initAnalytics, trackPageView } from './utils/analytics';
 import './index.css';
@@ -17,6 +18,7 @@ const PAGE_TITLES = {
   '/reservar': 'Reservar hora | Clínica Estética Imperium',
   '/fidelidad': 'Club de Fidelidad | Clínica Estética Imperium',
   '/creditos': 'Créditos | Clínica Estética Imperium',
+  '/privacidad': 'Política de Privacidad | Clínica Estética Imperium',
   '/link':     'Clínica Estética Imperium',
   '/admin':    'Admin | Clínica Estética Imperium',
   '/intranet': 'Intranet | Clínica Estética Imperium',
@@ -64,6 +66,7 @@ function Layout() {
           <Route path="/intranet" element={<Intranet />} />
           <Route path="/fidelidad" element={<Loyalty />} />
           <Route path="/creditos" element={<Creditos />} />
+          <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/link" element={<LinkHub />} />
         </Routes>
       </main>

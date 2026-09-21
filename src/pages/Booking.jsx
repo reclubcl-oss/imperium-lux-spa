@@ -137,6 +137,7 @@ export default function Booking() {
   const [searchParams] = useSearchParams();
   const [selection, setSelection] = useState({ date: null, time: null });
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', servicio: searchParams.get('servicio') || '', notas: '' });
+  const [accepted, setAccepted] = useState(false);
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [emailFailed, setEmailFailed] = useState(false);
@@ -163,7 +164,7 @@ export default function Booking() {
   const handleSelection = ({ date, time }) => setSelection({ date, time });
   const handleInput = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleServicioChange = (nombre) => setForm(prev => ({ ...prev, servicio: nombre }));
-  const canSubmit = selection.date && selection.time && form.nombre && form.email && form.telefono && form.servicio;
+  const canSubmit = selection.date && selection.time && form.nombre && form.email && form.telefono && form.servicio && accepted;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -416,6 +417,17 @@ export default function Booking() {
                   onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
                 />
               </div>
+
+              {/* Consentimiento */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem', lineHeight: 1.6 }}>
+                <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)}
+                  style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: 'var(--olive)', flexShrink: 0 }} />
+                <span>
+                  He leído y acepto la{' '}
+                  <Link to="/privacidad" target="_blank" style={{ color: 'var(--olive)', textDecoration: 'underline' }}>Política de Privacidad</Link>
+                  {' '}y autorizo el uso de mis datos para gestionar mi reserva.
+                </span>
+              </label>
 
               {/* Error */}
               {status === 'error' && (
