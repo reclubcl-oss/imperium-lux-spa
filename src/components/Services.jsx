@@ -6,6 +6,7 @@ import { CATEGORY_DEFAULT_IMAGE } from '../utils/categoryDefaults';
 import { TREATMENT_DEFAULT_IMAGE } from '../utils/treatmentDefaults';
 import { formatCLP } from '../utils/format';
 import { whatsappLink } from '../utils/contact';
+import { SERVICIOS_RESPALDO } from '../utils/serviciosRespaldo';
 import { useFocusTrap } from '../utils/useFocusTrap';
 
 // true en pantallas de celular (<= 640px); se actualiza si giras el teléfono.
@@ -147,10 +148,12 @@ export default function Services() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    getActiveServices().then(({ data }) => {
-      setServices(data || []);
+    // Si la base de datos no responde (o viene vacía por una caída), se muestra
+    // la copia de respaldo en vez de una sección vacía.
+    getActiveServices().then(({ success, data }) => {
+      setServices(success && data?.length ? data : SERVICIOS_RESPALDO);
       setLoading(false);
-    });
+    }).catch(() => { setServices(SERVICIOS_RESPALDO); setLoading(false); });
   }, []);
 
   // Sin pestaña "Todos": con 24 tratamientos, en celular eso era un scroll
