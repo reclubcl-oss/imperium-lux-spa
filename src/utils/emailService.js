@@ -5,7 +5,8 @@ const TEMPLATE_ID_CLINIC   = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;       // 
 const TEMPLATE_ID_CLIENT   = 'template_r9y2ubi';                              // → cliente
 const PUBLIC_KEY           = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-export const CLINIC_EMAIL = import.meta.env.VITE_CLINIC_EMAIL || 'clinicaimperiumvina@gmail.com';
+// .trim(): el valor guardado en Vercel traía un salto de línea al final, que invalida el destinatario.
+export const CLINIC_EMAIL = (import.meta.env.VITE_CLINIC_EMAIL || '').trim() || 'clinicaimperiumvina@gmail.com';
 
 export async function sendBookingEmail({ nombre, email, telefono, servicio, fecha, hora, notas, staffEmail, staffNombre, manageUrl, skipClient }) {
   const params = {

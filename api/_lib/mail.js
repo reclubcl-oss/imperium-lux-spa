@@ -5,7 +5,7 @@ const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
 export const gmailConfigured = () => !!(GMAIL_USER && GMAIL_APP_PASSWORD);
-export const clinicInbox = () => process.env.VITE_CLINIC_EMAIL || GMAIL_USER;
+export const clinicInbox = () => (process.env.VITE_CLINIC_EMAIL || '').trim() || GMAIL_USER;
 
 /** Envía un correo por Gmail; nunca lanza: devuelve true/false. */
 export async function sendMailSafe({ to, subject, text, html }) {
