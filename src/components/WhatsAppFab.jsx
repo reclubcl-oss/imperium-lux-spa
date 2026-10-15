@@ -1,8 +1,11 @@
 import { whatsappLink } from '../utils/contact';
+import { useSite } from '../utils/siteContent';
 
 // Botón flotante de WhatsApp, abajo a la derecha en todas las páginas públicas.
 // Queda por debajo de los diálogos (z-index 200+) para no taparlos.
 export default function WhatsAppFab() {
+  const { contacto } = useSite();
+  if (!contacto.mostrarWhatsapp) return null;
   return (
     <a href={whatsappLink('Hola! Me gustaría más información.')} target="_blank" rel="noreferrer"
       aria-label="Escribirnos por WhatsApp" className="whatsapp-fab"

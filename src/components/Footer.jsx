@@ -1,9 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/brand/logo.webp';
 import InstallApp from './InstallApp';
+import { useSite } from '../utils/siteContent';
 
 export default function Footer() {
   const navigate = useNavigate();
+  const site = useSite();
+  const c = site.contacto;
 
   // Mismo arreglo que en Navbar: los links "/#seccion" deben funcionar parado
   // en cualquier página, sin recargar todo el sitio.
@@ -28,10 +31,10 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ background: 'var(--cream)', borderRadius: '12px', padding: '14px 20px', display: 'inline-block', marginBottom: '18px' }}>
-              <img src={logo} alt="Clínica Estética Imperium" style={{ height: '48px', width: 'auto', display: 'block' }} />
+              <img src={site.marca.logoUrl || logo} alt="Clínica Estética Imperium" style={{ height: '48px', width: 'auto', display: 'block' }} />
             </div>
             <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', lineHeight: 1.8 }}>
-              Estética avanzada con atención personalizada en Viña del Mar.
+              {site.footer.descripcion}
             </p>
           </div>
 
@@ -56,11 +59,11 @@ export default function Footer() {
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Contacto</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
-                { icon: '📍', text: '2 Oriente 124, Viña del Mar' },
-                { icon: '📞', text: '+56 9 7149 4060' },
-                { icon: '✉️', text: 'clinicaimperiumvina@gmail.com' },
-                { icon: '🕐', text: 'Lun–Vie 9:00–20:00 · Sáb 9:00–18:00' },
-              ].map(({ icon, text }) => (
+                { icon: '📍', text: c.direccionCorta },
+                { icon: '📞', text: c.telefono },
+                { icon: '✉️', text: c.email },
+                { icon: '🕐', text: c.horarioResumen },
+              ].filter(i => i.text).map(({ icon, text }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ fontSize: '0.82rem', flexShrink: 0 }}>{icon}</span>
                   <span style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', lineHeight: 1.5 }}>{text}</span>
@@ -72,7 +75,7 @@ export default function Footer() {
           {/* Social */}
           <div>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Redes Sociales</h2>
-            <a href="https://www.instagram.com/clinica.estetica.imperium" target="_blank" rel="noreferrer" aria-label="Instagram de Clínica Estética Imperium"
+            <a href={c.instagram} target="_blank" rel="noreferrer" aria-label="Instagram de Clínica Estética Imperium"
               style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', border: '1px solid rgba(255,254,251,0.3)', color: 'var(--cream)', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold-accent)'; e.currentTarget.style.color = 'var(--gold-accent)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,254,251,0.3)'; e.currentTarget.style.color = 'var(--cream)'; }}>

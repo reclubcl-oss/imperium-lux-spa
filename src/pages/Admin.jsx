@@ -9,6 +9,7 @@ import AdminClientsView from '../components/AdminClientsView';
 import AdminLinksView from '../components/AdminLinksView';
 import AdminNotificationsView from '../components/AdminNotificationsView';
 import AdminReservasView from '../components/AdminReservasView';
+import AdminSiteView from '../components/AdminSiteView';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -349,7 +350,7 @@ function Dashboard({ onLogout }) {
         {/* Header */}
         <div style={{ marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '4px', fontWeight: 400 }}>
-            {({ reservas: 'Dashboard de Reservas', calendario: 'Calendario', finanzas: 'Finanzas', servicios: 'Tratamientos', clientes: 'Clientes y Fidelidad', enlaces: 'Enlaces', avisos: 'Notificaciones', equipo: 'Gestión de Equipo' })[tab]}
+            {({ reservas: 'Dashboard de Reservas', calendario: 'Calendario', finanzas: 'Finanzas', servicios: 'Tratamientos', clientes: 'Clientes y Fidelidad', sitio: 'Editor del Sitio Web', enlaces: 'Enlaces', avisos: 'Notificaciones', equipo: 'Gestión de Equipo' })[tab]}
           </h1>
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.82rem' }}>
             {(d => d.charAt(0).toUpperCase() + d.slice(1))(new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))}
@@ -358,7 +359,7 @@ function Dashboard({ onLogout }) {
 
         {/* Tabs */}
         <div className="admin-tabs" style={{ display: 'flex', gap: '2px', marginBottom: '28px', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
-          {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['enlaces', 'ENLACES'], ['avisos', 'NOTIFICACIONES'], ['equipo', 'EQUIPO']].map(([key, label]) => (
+          {[['reservas', 'RESERVAS'], ['calendario', 'CALENDARIO'], ['finanzas', 'FINANZAS'], ['servicios', 'SERVICIOS'], ['clientes', 'CLIENTES'], ['sitio', 'SITIO WEB'], ['enlaces', 'ENLACES'], ['avisos', 'NOTIFICACIONES'], ['equipo', 'EQUIPO']].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)} style={{
               background: 'transparent',
               color: tab === key ? 'var(--olive)' : 'var(--ink-soft)',
@@ -380,6 +381,7 @@ function Dashboard({ onLogout }) {
         {tab === 'finanzas' && <AdminFinanceView reservations={reservations} />}
         {tab === 'servicios' && <AdminServicesView />}
         {tab === 'clientes' && <AdminClientsView reservations={reservations} />}
+        {tab === 'sitio' && <AdminSiteView />}
         {tab === 'enlaces' && <AdminLinksView />}
         {tab === 'avisos' && <AdminNotificationsView />}
 

@@ -11,6 +11,8 @@ import Cita from './pages/Cita';
 import StandalonePrompt from './components/StandalonePrompt';
 import WhatsAppFab from './components/WhatsAppFab';
 import LinkHub from './pages/LinkHub';
+import SiteProvider from './utils/SiteProvider';
+import { useSite } from './utils/siteContent';
 
 // El panel admin y la intranet solo los usa el equipo — no tiene sentido
 // que cada visitante descargue ese código para ver la página de inicio.
@@ -33,12 +35,13 @@ const PAGE_TITLES = {
 
 function Layout() {
   const { pathname, hash } = useLocation();
+  const site = useSite();
   const isBare = pathname === '/admin' || pathname === '/intranet' || pathname === '/link';
 
   useEffect(() => { initAnalytics(); }, []);
 
   useEffect(() => {
-    document.title = PAGE_TITLES[pathname] || PAGE_TITLES['/'];
+    document.title = pathname === '/' ? site.marca.tituloPagina : (PAGE_TITLES[pathname] || site.marca.tituloPagina);
     // Cada página declara su propia dirección canónica (antes todas apuntaban a la portada).
     const url = `${window.location.origin}${pathname === '/' ? '/' : pathname}`;
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -46,7 +49,7 @@ function Layout() {
     canonical.href = url;
     document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
     if (pathname !== '/admin' && pathname !== '/intranet') trackPageView(pathname);
-  }, [pathname]);
+  }, [pathname, site.marca.tituloPagina]);
 
   // React Router no reinicia el scroll al cambiar de página (a diferencia de
   // una navegación normal del navegador) — si vienes desplazado hacia abajo
@@ -95,8 +98,10 @@ function Layout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
+    <SiteProvider>
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
+    </SiteProvider>
   );
 }

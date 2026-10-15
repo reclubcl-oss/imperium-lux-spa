@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import InstallApp from './InstallApp';
 import logo from '../assets/brand/logo.webp';
+import { useSite } from '../utils/siteContent';
 
 export default function Navbar() {
+  const site = useSite();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,7 +38,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-          <img src={logo} alt="Clínica Estética Imperium" style={{ height: '52px', width: 'auto', display: 'block' }} />
+          <img src={site.marca.logoUrl || logo} alt="Clínica Estética Imperium" style={{ height: '52px', width: 'auto', display: 'block' }} />
         </Link>
 
         {/* Desktop links */}

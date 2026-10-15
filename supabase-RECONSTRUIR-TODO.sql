@@ -391,3 +391,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS reservas_cancel_token_idx ON reservas (cancel_
 
 -- Dispositivos de administradoras que reciben alertas (nuevas reservas, errores, cancelaciones)
 ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS es_admin BOOLEAN NOT NULL DEFAULT false;
+
+-- ───────────── supabase-add-sitio.sql ─────────────
+CREATE TABLE IF NOT EXISTS sitio_contenido (
+  clave       TEXT PRIMARY KEY,
+  valor       JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE sitio_contenido ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lectura publica del contenido del sitio" ON sitio_contenido;
+CREATE POLICY "Lectura publica del contenido del sitio" ON sitio_contenido FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Solo admin edita el contenido del sitio" ON sitio_contenido;
+CREATE POLICY "Solo admin edita el contenido del sitio" ON sitio_contenido
+  FOR ALL TO authenticated
+  USING (auth.uid() IN (SELECT auth_user_id FROM staff WHERE rol = 'admin'))
+  WITH CHECK (auth.uid() IN (SELECT auth_user_id FROM staff WHERE rol = 'admin'));

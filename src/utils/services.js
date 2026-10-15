@@ -56,6 +56,17 @@ export async function uploadServiceImage(originalFile, serviceId) {
   return { success: true, url: data.publicUrl };
 }
 
+/** Sube una imagen del editor del sitio (portada, nosotros, logo) al mismo bucket público de fotos. */
+export async function uploadSiteImage(originalFile, nombre) {
+  if (!supabase) return { success: false, error: 'Supabase no configurado' };
+  const file = await compressImage(originalFile, 1600);
+  const ext = file === originalFile ? originalFile.name.split('.').pop() : 'webp';
+  const path = `sitio-${nombre}-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from('servicios').upload(path, file, { upsert: true, cacheControl: '31536000', contentType: file.type || undefined });
+  if (error) return { success: false, error: error.message };
+  return { success: true, url: supabase.storage.from('servicios').getPublicUrl(path).data.publicUrl };
+}
+
 export async function createService({ nombre, categoria, descripcion, precio, fotoFile }) {
   if (!supabase) return { success: false, error: 'Supabase no configurado' };
 

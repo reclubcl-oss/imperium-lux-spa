@@ -8,6 +8,7 @@ import { formatCLP } from '../utils/format';
 import { whatsappLink } from '../utils/contact';
 import { SERVICIOS_RESPALDO } from '../utils/serviciosRespaldo';
 import { useFocusTrap } from '../utils/useFocusTrap';
+import { useSite } from '../utils/siteContent';
 
 // true en pantallas de celular (<= 640px); se actualiza si giras el teléfono.
 function useIsMobile() {
@@ -140,6 +141,7 @@ function TreatmentDetailModal({ service, imageSrc, onClose }) {
 }
 
 export default function Services() {
+  const { servicios: txt } = useSite();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(null);
@@ -187,11 +189,11 @@ export default function Services() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,48px)' }}>
-          <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>NUESTROS SERVICIOS</p>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400 }}>Tratamientos Exclusivos</h2>
+          <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontFamily: 'var(--font-sans)', fontWeight: 700, marginBottom: '14px' }}>{txt.etiqueta}</p>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', marginBottom: '18px', fontWeight: 400 }}>{txt.titulo}</h2>
           <SectionDivider margin="0 auto 16px" />
           <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: 'clamp(0.9rem,2vw,1rem)', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
-            Cada tratamiento es una experiencia única, diseñada para revelar tu mejor versión. Toca una foto para ver más.
+            {txt.texto}
           </p>
         </div>
 
