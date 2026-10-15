@@ -1,5 +1,6 @@
 import SectionDivider from './SectionDivider';
 import { useSite } from '../utils/siteContent';
+import { E } from './Editable';
 
 export default function Location() {
   const { ubicacion: u } = useSite();
@@ -10,8 +11,8 @@ export default function Location() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,6vw,52px)' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>{u.etiqueta}</p>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}>{u.titulo}</h2>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}><E path="ubicacion.etiqueta" /></p>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}><E path="ubicacion.titulo" /></h2>
           <SectionDivider margin="0 auto" />
         </div>
 
@@ -29,7 +30,7 @@ export default function Location() {
                 <div>
                   <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '6px' }}>DIRECCIÓN</p>
                   <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '0.92rem', lineHeight: 1.7 }}>
-                    {u.direccion.split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>)}
+                    <E path="ubicacion.direccion" multiline />
                   </p>
                 </div>
               </div>
@@ -43,10 +44,10 @@ export default function Location() {
                 </div>
                 <div style={{ width: '100%' }}>
                   <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.7rem', letterSpacing: '0.15em', fontWeight: 700, marginBottom: '10px' }}>HORARIOS</p>
-                  {u.horarios.map(({ dia: day, horas: hours }) => (
+                  {u.horarios.map(({ dia: day, horas: hours }, i) => (
                     <div key={day} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-soft)', paddingBottom: '7px', marginBottom: '7px' }}>
-                      <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.85rem' }}>{day}</span>
-                      <span style={{ fontFamily: 'var(--font-sans)', color: hours === 'Cerrado' ? 'var(--ink-soft)' : 'var(--ink)', fontSize: '0.85rem', fontWeight: 600 }}>{hours}</span>
+                      <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.85rem' }}><E path={`ubicacion.horarios.${i}.dia`} /></span>
+                      <span style={{ fontFamily: 'var(--font-sans)', color: hours === 'Cerrado' ? 'var(--ink-soft)' : 'var(--ink)', fontSize: '0.85rem', fontWeight: 600 }}><E path={`ubicacion.horarios.${i}.horas`} /></span>
                     </div>
                   ))}
                 </div>

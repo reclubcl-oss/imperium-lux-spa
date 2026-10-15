@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../utils/siteContent';
+import { E, EditableImage } from './Editable';
 // Va en public/ (URL fija) para poder precargarla desde index.html: es el elemento
 // más grande de la portada y así arranca a bajar antes de que cargue el JavaScript.
 const heroPoster = '/hero-poster.webp';
@@ -126,32 +127,32 @@ export default function Hero() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
               <div style={{ width: '28px', height: '2px', background: 'var(--gold-accent)' }} />
               <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>
-                {hero.etiqueta}
+                <E path="hero.etiqueta" />
               </p>
             </div>
 
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2.2rem,5.5vw,3.4rem)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.15, marginBottom: '22px' }}>
-              {hero.titulo}
+              <E path="hero.titulo" />
             </h1>
 
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem', color: 'var(--ink-soft)', lineHeight: 1.8, marginBottom: '32px', maxWidth: '440px' }}>
-              {hero.texto}
+              <E path="hero.texto" />
             </p>
 
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
               <Link to="/reservar" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--olive)', color: 'var(--cream)', padding: '15px 28px', fontSize: '0.9rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--olive-light)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--olive)'}>
-                {hero.botonPrincipal}
+                <E path="hero.botonPrincipal" />
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </Link>
               <a href="#servicios" style={{ display: 'inline-flex', alignItems: 'center', background: 'transparent', color: 'var(--ink)', padding: '15px 28px', fontSize: '0.9rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', border: '1px solid var(--border)' }}>
-                {hero.botonSecundario}
+                <E path="hero.botonSecundario" />
               </a>
             </div>
 
             <p style={{ marginTop: '28px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--ink-soft)', letterSpacing: '0.02em' }}>
-              {hero.nota}
+              <E path="hero.nota" />
             </p>
           </div>
 
@@ -162,7 +163,7 @@ export default function Hero() {
               border: '1.5px solid var(--gold-accent)', zIndex: 0,
             }} />
             <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 24px 60px rgba(23,27,22,0.14)', zIndex: 1 }}>
-              <HeroVideo key={`${hero.imagenUrl}|${hero.videoUrl}`} poster={hero.imagenUrl || heroPoster} videoSrc={hero.videoUrl || '/imperium-hero.mp4'} />
+              <EditableImage path="hero.imagenUrl" nombre="portada" label="Cambiar foto de portada"><HeroVideo key={`${hero.imagenUrl}|${hero.videoUrl}`} poster={hero.imagenUrl || heroPoster} videoSrc={hero.videoUrl || '/imperium-hero.mp4'} /></EditableImage>
             </div>
           </div>
         </div>
@@ -174,8 +175,8 @@ export default function Hero() {
               <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <div style={{ flexShrink: 0 }}>{FEATURE_ICONS[i % FEATURE_ICONS.length]}</div>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>{f.titulo}</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.85rem', lineHeight: 1.6 }}>{f.texto}</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}><E path={`hero.destacados.${i}.titulo`} /></p>
+                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.85rem', lineHeight: 1.6 }}><E path={`hero.destacados.${i}.texto`} /></p>
                 </div>
               </div>
             ))}

@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import SectionDivider from './SectionDivider';
 import { useSite } from '../utils/siteContent';
+import { E } from './Editable';
 
 export default function VideoSection() {
   const { comunidad: t } = useSite();
@@ -31,11 +32,11 @@ export default function VideoSection() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'clamp(28px,5vw,48px)' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}>{t.etiqueta}</p>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}>{t.titulo}</h2>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, marginBottom: '14px' }}><E path="comunidad.etiqueta" /></p>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem,5vw,2.8rem)', color: 'var(--ink)', fontWeight: 400, marginBottom: '18px' }}><E path="comunidad.titulo" /></h2>
           <SectionDivider margin="0 auto 14px" />
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: 'clamp(0.9rem,2vw,0.95rem)', lineHeight: 1.8, maxWidth: '440px', margin: '0 auto' }}>
-            {t.texto}
+            <E path="comunidad.texto" />
           </p>
         </div>
 
@@ -65,7 +66,7 @@ export default function VideoSection() {
         </div>
 
         <p style={{ textAlign:'center', fontFamily:'var(--font-serif)', fontStyle: 'italic', color:'var(--ink-soft)', fontSize:'clamp(0.9rem,2vw,1.05rem)', marginTop:'28px' }}>
-          "{t.frase}"
+          "<E path="comunidad.frase" />"
         </p>
       </div>
     </section>

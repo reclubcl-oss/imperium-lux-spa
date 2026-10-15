@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/brand/logo.webp';
 import InstallApp from './InstallApp';
 import { useSite } from '../utils/siteContent';
+import { E } from './Editable';
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function Footer() {
               <img src={site.marca.logoUrl || logo} alt="Clínica Estética Imperium" style={{ height: '48px', width: 'auto', display: 'block' }} />
             </div>
             <p style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', lineHeight: 1.8 }}>
-              {site.footer.descripcion}
+              <E path="footer.descripcion" />
             </p>
           </div>
 
@@ -59,14 +60,14 @@ export default function Footer() {
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Contacto</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
-                { icon: '📍', text: c.direccionCorta },
-                { icon: '📞', text: c.telefono },
-                { icon: '✉️', text: c.email },
-                { icon: '🕐', text: c.horarioResumen },
-              ].filter(i => i.text).map(({ icon, text }) => (
+                { icon: '📍', text: c.direccionCorta, path: 'contacto.direccionCorta' },
+                { icon: '📞', text: c.telefono, path: 'contacto.telefono' },
+                { icon: '✉️', text: c.email, path: 'contacto.email' },
+                { icon: '🕐', text: c.horarioResumen, path: 'contacto.horarioResumen' },
+              ].filter(i => i.text).map(({ icon, text, path }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ fontSize: '0.82rem', flexShrink: 0 }}>{icon}</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', lineHeight: 1.5 }}>{text}</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', lineHeight: 1.5 }}><E path={path} /></span>
                 </div>
               ))}
             </div>

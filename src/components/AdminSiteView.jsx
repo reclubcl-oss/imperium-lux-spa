@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react';
-import { DEFAULTS, SECCION_NOMBRES, buildSite, saveOverrides, useSite, useSiteReload } from '../utils/siteContent';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { DEFAULTS, SECCION_NOMBRES, EditContext, SiteContext, applyColors, buildSite, getPath, saveOverrides, setPath, useSite, useSiteReload } from '../utils/siteContent';
+import Home from '../pages/Home';
+import Footer from './Footer';
 import { uploadSiteImage } from '../utils/services';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -78,15 +80,8 @@ const BLOQUES = [
   ] },
 ];
 
-const get = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
-function setIn(obj, path, value) {
-  const keys = path.split('.');
-  const copy = structuredClone(obj);
-  let cur = copy;
-  keys.slice(0, -1).forEach(k => { cur = cur[k]; });
-  cur[keys[keys.length - 1]] = value;
-  return copy;
-}
+const get = getPath;
+const setIn = setPath;
 
 function ImageField({ value, onChange, nombre }) {
   const [busy, setBusy] = useState(false);
@@ -192,6 +187,7 @@ export default function AdminSiteView() {
   const current = useSite();
   const reload = useSiteReload();
   const [form, setForm] = useState(() => structuredClone(current));
+  const [modo, setModo] = useState('pagina'); // 'pagina' = editar tocando la página · 'formulario' = lista de campos
   const [openId, setOpenId] = useState('hero');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -200,6 +196,20 @@ export default function AdminSiteView() {
   const [confirmReset, setConfirmReset] = useState(false);
 
   const dirty = JSON.stringify(form) !== JSON.stringify(current);
+
+  // Los colores del borrador se ven al instante; al salir se vuelven a los guardados.
+  useEffect(() => {
+    applyColors(form.colores);
+    return () => applyColors(current.colores);
+  }, [form.colores, current.colores]);
+
+  // Avisa si intentas cerrar la pestaña con cambios sin guardar.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
 
   const save = async (valor, okText) => {
     setSaving(true); setMsg(null);
@@ -220,10 +230,14 @@ export default function AdminSiteView() {
     setForm(structuredClone(buildSite(null)));
   };
 
+  const discard = () => { setForm(structuredClone(current)); setMsg(null); };
+
+  const editCtx = useMemo(() => ({ editing: true, setValue: (path, v) => setForm(f => setIn(f, path, v)) }), []);
+  const draftCtx = useMemo(() => ({ site: form, reload: async () => {} }), [form]);
+
   const renderBloque = (b) => {
     const open = openId === b.id;
     return (
-
       <div key={b.id} style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
         <button type="button" onClick={() => setOpenId(open ? null : b.id)} aria-expanded={open}
           style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: '14px 18px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--ink)', textAlign: 'left' }}>
@@ -240,14 +254,22 @@ export default function AdminSiteView() {
     );
   };
 
+  const tabBtn = (id, text) => (
+    <button type="button" onClick={() => setModo(id)} aria-pressed={modo === id}
+      style={{ ...btn, background: modo === id ? 'var(--olive)' : 'transparent', color: modo === id ? 'var(--cream)' : 'var(--ink)', borderColor: modo === id ? 'var(--olive)' : 'var(--border)', fontWeight: 700 }}>{text}</button>
+  );
+
   return (
     <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <p style={{ ...hint, margin: 0, flex: '1 1 280px' }}>Edita textos, fotos, colores y el orden de las secciones. Los cambios se ven en el sitio apenas guardas.</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {tabBtn('pagina', 'Editar en la página')}
+          {tabBtn('formulario', 'Más ajustes')}
+        </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button type="button" style={btn} onClick={() => setShowPreview(v => !v)}>{showPreview ? 'Ocultar vista previa' : 'Ver vista previa'}</button>
           <button type="button" style={btn} onClick={() => setConfirmReset(true)} disabled={saving}>Restaurar sitio original</button>
-          <button type="button" style={{ ...btnMain, opacity: dirty ? 1 : 0.55 }} disabled={saving || !dirty} onClick={() => save(form, 'Cambios guardados.')}>{saving ? 'Guardando…' : 'Guardar cambios'}</button>
+          <button type="button" style={{ ...btn, opacity: dirty ? 1 : 0.5 }} onClick={discard} disabled={saving || !dirty}>Descartar cambios</button>
+          <button type="button" style={{ ...btnMain, opacity: dirty ? 1 : 0.55 }} disabled={saving || !dirty} onClick={() => save(form, 'Cambios guardados. Ya están en el sitio.')}>{saving ? 'Guardando…' : 'Guardar cambios'}</button>
         </div>
       </div>
 
@@ -256,27 +278,55 @@ export default function AdminSiteView() {
       )}
       {dirty && !msg && <p style={{ ...hint, marginTop: 0, marginBottom: '12px', color: 'var(--gold-text)' }}>Tienes cambios sin guardar.</p>}
 
-      <div className="site-editor" style={{ display: 'grid', gridTemplateColumns: showPreview ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gap: '20px', alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px' }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '10px' }}>Orden de las secciones</p>
-            <SeccionesOrden form={form} setForm={setForm} />
+      {modo === 'pagina' ? (
+        <>
+          <p style={{ ...hint, marginTop: 0, marginBottom: '12px' }}>
+            Toca cualquier texto con borde punteado y escríbelo de nuevo. En las fotos aparece un botón para cambiarlas. Cuando termines, toca <strong>Guardar cambios</strong>.
+            Para colores, orden de secciones, WhatsApp o videos usa <strong>Más ajustes</strong>.
+          </p>
+          <SiteContext.Provider value={draftCtx}>
+            <EditContext.Provider value={editCtx}>
+              <div className="site-canvas"
+                onClickCapture={e => { if (e.target.closest?.('a')) e.preventDefault(); }}
+                style={{ border: '2px solid var(--gold-accent)', borderRadius: '12px', overflow: 'hidden', background: 'var(--cream)', position: 'relative', isolation: 'isolate', maxHeight: '78vh', overflowY: 'auto' }}>
+                <Home />
+                <Footer />
+              </div>
+            </EditContext.Provider>
+          </SiteContext.Provider>
+          <style>{`
+            .site-canvas [data-edit] { outline: 1.5px dashed rgba(181,146,77,0.75); outline-offset: 3px; border-radius: 3px; transition: background 0.15s; }
+            .site-canvas [data-edit]:hover { background: rgba(181,146,77,0.14); }
+            .site-canvas [data-edit]:focus { outline: 2px solid var(--gold-accent); background: rgba(181,146,77,0.18); }
+          `}</style>
+        </>
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <button type="button" style={btn} onClick={() => setShowPreview(v => !v)}>{showPreview ? 'Ocultar vista previa' : 'Ver vista previa'}</button>
           </div>
-          {BLOQUES.map(renderBloque)}
-        </div>
-
-        {showPreview && (
-          <div className="site-preview" style={{ position: 'sticky', top: '12px', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ ...label, margin: 0 }}>VISTA PREVIA</span>
-              <a href="/" target="_blank" rel="noreferrer" style={{ ...hint, margin: 0, color: 'var(--olive)' }}>Abrir el sitio ↗</a>
+          <div className="site-editor" style={{ display: 'grid', gridTemplateColumns: showPreview ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gap: '20px', alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px' }}>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '10px' }}>Orden de las secciones</p>
+                <SeccionesOrden form={form} setForm={setForm} />
+              </div>
+              {BLOQUES.map(renderBloque)}
             </div>
-            <iframe key={previewKey} title="Vista previa del sitio" src="/" style={{ width: '100%', height: 'min(78vh, 760px)', border: 0, display: 'block' }} />
-          </div>
-        )}
-      </div>
 
-      <style>{`@media (max-width: 900px) { .site-editor { grid-template-columns: minmax(0,1fr) !important; } .site-preview { position: static !important; } }`}</style>
+            {showPreview && (
+              <div className="site-preview" style={{ position: 'sticky', top: '12px', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ ...label, margin: 0 }}>VISTA PREVIA (lo guardado)</span>
+                  <a href="/" target="_blank" rel="noreferrer" style={{ ...hint, margin: 0, color: 'var(--olive)' }}>Abrir el sitio ↗</a>
+                </div>
+                <iframe key={previewKey} title="Vista previa del sitio" src="/" style={{ width: '100%', height: 'min(78vh, 760px)', border: 0, display: 'block' }} />
+              </div>
+            )}
+          </div>
+          <style>{`@media (max-width: 900px) { .site-editor { grid-template-columns: minmax(0,1fr) !important; } .site-preview { position: static !important; } }`}</style>
+        </>
+      )}
 
       <ConfirmDialog open={confirmReset} title="¿Restaurar el sitio original?" confirmLabel="SÍ, RESTAURAR" danger onConfirm={resetAll} onCancel={() => setConfirmReset(false)}>
         Se borran todos los textos, fotos y colores que cambiaste desde aquí y el sitio vuelve a como estaba al inicio. Los tratamientos y las reservas no se tocan.

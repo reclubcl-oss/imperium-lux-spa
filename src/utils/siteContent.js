@@ -159,10 +159,35 @@ export async function saveOverrides(valor) {
 
 export const SiteContext = createContext({ site: buildSite(null), reload: async () => {} });
 
+// Modo "editar sobre la página" (solo en el admin): cuando `editing` es true, los textos
+// y fotos marcados con <E> / <EditableImage> se pueden tocar y cambiar directamente.
+export const EditContext = createContext({ editing: false, setValue: () => {} });
+
 export function useSite() {
   return useContext(SiteContext).site;
 }
 
 export function useSiteReload() {
   return useContext(SiteContext).reload;
+}
+
+// Aplica los colores elegidos en el admin a las variables CSS del sitio.
+export function applyColors(colores) {
+  const root = document.documentElement.style;
+  const set = (name, value) => { if (/^#[0-9a-f]{6}$/i.test(value || '')) root.setProperty(name, value); };
+  set('--olive', colores.olive);
+  set('--forest', colores.forest);
+  set('--gold-accent', colores.gold);
+  if (/^#[0-9a-f]{6}$/i.test(colores.olive || '')) root.setProperty('--olive-light', `color-mix(in srgb, ${colores.olive} 82%, white)`);
+}
+
+export const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+
+export function setPath(obj, path, value) {
+  const keys = path.split('.');
+  const copy = structuredClone(obj);
+  let cur = copy;
+  keys.slice(0, -1).forEach(k => { cur = cur[k]; });
+  cur[keys[keys.length - 1]] = value;
+  return copy;
 }

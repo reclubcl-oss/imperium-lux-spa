@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { EditContext } from '../utils/siteContent';
 import { Link } from 'react-router-dom';
 
 const DISMISS_KEY = 'imperium_promo_dismissed';
 
 export default function PromoPopup() {
+  const { editing } = useContext(EditContext);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export default function PromoPopup() {
     try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignorar */ }
   };
 
-  if (!visible) return null;
+  if (!visible || editing) return null;
 
   return (
     <div
