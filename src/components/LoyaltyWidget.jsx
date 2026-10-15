@@ -10,7 +10,7 @@ function StampCard({ total, filled, subtitle }) {
   return (
     <div style={{ background: 'var(--forest)', borderRadius: '18px', padding: 'clamp(24px,5vw,32px)' }}>
       <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--gold-accent)', fontSize: '0.65rem', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '18px' }}>
-        TU TARJETA DE SELLOS
+        TARJETA DE FIDELIDAD
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
         {circles.map(n => {
@@ -41,7 +41,7 @@ function StampCard({ total, filled, subtitle }) {
 }
 
 /**
- * Widget de fidelidad completo (tarjeta de sellos + formulario de consulta) —
+ * Widget de fidelidad completo (tarjeta de fidelidad + formulario de consulta) —
  * autocontenido, se usa tanto en la sección de Inicio (LoyaltySection) como
  * en la página standalone /fidelidad (pages/Loyalty.jsx), para no duplicar
  * la lógica en dos lados.
@@ -79,7 +79,7 @@ export default function LoyaltyWidget() {
 
   return (
     <div style={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
-      {/* Tarjeta de sellos */}
+      {/* Tarjeta de fidelidad */}
       <div style={{ marginBottom: '20px' }}>
         <StampCard
           total={threshold}

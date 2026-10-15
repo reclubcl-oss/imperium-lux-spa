@@ -13,7 +13,7 @@ export default function Loyalty() {
             PROGRAMA DE FIDELIDAD
           </p>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', color: 'var(--ink)', marginBottom: '16px', fontWeight: 400 }}>
-            Tu Tarjeta de Sellos
+            Tarjeta de Fidelidad
           </h1>
           <SectionDivider margin="0 auto 16px" />
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.92rem', lineHeight: 1.7 }}>

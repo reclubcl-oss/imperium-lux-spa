@@ -41,7 +41,7 @@ const BLOQUES = [
     { path: 'cifras.mostrarTratamientos', label: 'Mostrar la cantidad de tratamientos (se calcula sola)', tipo: 'bool' },
     { path: 'cifras.items', label: 'CIFRAS', tipo: 'lista', items: [{ k: 'numero', label: 'Número (ej. 6, 1 a 1)' }, { k: 'texto', label: 'Texto' }], nuevo: { numero: '', texto: '' } },
   ] },
-  { id: 'fidelidad', titulo: 'Tarjeta de sellos', campos: [
+  { id: 'fidelidad', titulo: 'Tarjeta de fidelidad', campos: [
     { path: 'fidelidad.etiqueta', label: 'TEXTO PEQUEÑO' },
     { path: 'fidelidad.titulo', label: 'TÍTULO' },
     { path: 'fidelidad.texto', label: 'DESCRIPCIÓN', tipo: 'area' },

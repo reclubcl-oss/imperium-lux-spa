@@ -124,7 +124,7 @@ export default function Hero() {
 
           {/* Text */}
           <div>
-            <p style={{ marginBottom: '22px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--sage)', border: '1px solid var(--border)', borderRadius: '99px', padding: '8px 16px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--olive)', letterSpacing: '0.02em' }}>
+            <p className="hero-badge" style={{ marginBottom: '22px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--sage)', border: '1px solid var(--border)', borderRadius: '99px', padding: '8px 16px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--olive)', letterSpacing: '0.02em' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" /><path d="M9 12l2 2 4-4" /></svg>
               <span><E path="hero.nota" /></span>
             </p>
@@ -159,7 +159,7 @@ export default function Hero() {
 
           {/* Image */}
           <div style={{ position: 'relative', order: hero.fotoLado === 'izquierda' ? -1 : 0 }}>
-            <div aria-hidden="true" style={{
+            <div aria-hidden="true" className="hero-frame" style={{
               position: 'absolute', inset: '16px -16px -16px 16px', borderRadius: '20px',
               border: '1.5px solid var(--gold-accent)', zIndex: 0,
             }} />
@@ -172,7 +172,7 @@ export default function Hero() {
 
         {/* Features strip */}
         <div style={{ marginTop: 'clamp(48px,8vw,72px)', background: 'var(--border-soft)', borderRadius: '18px', padding: 'clamp(24px,4vw,36px)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '28px' }}>
+          <div className="hero-features" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '28px' }}>
             {hero.destacados.map((f, i) => (
               <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <div style={{ flexShrink: 0 }}>{FEATURE_ICONS[i % FEATURE_ICONS.length]}</div>

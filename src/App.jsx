@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -38,6 +38,9 @@ const PAGE_TITLES = {
 function Layout() {
   const { pathname, hash } = useLocation();
   const site = useSite();
+  // La primera carga no se anima (no retrasar la portada); los cambios de página sí.
+  const [firstPath] = useState(pathname);
+  const animatePage = pathname !== firstPath;
   const isBare = pathname === '/admin' || pathname === '/intranet' || pathname === '/link';
 
   useEffect(() => { initAnalytics(); }, []);
@@ -94,7 +97,7 @@ function Layout() {
   return (
     <>
       {!isBare && <Navbar />}
-      <main>
+      <main key={pathname} className={animatePage ? 'page-enter' : undefined}>
         <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
         <Routes>
           <Route path="/"         element={<Home />} />

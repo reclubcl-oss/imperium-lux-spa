@@ -56,6 +56,51 @@ h1, h2, h3, h4 {
 .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
 
+/* Elementos hijos que entran uno tras otro (cuando su sección aparece). Se usa `animation` con fill
+   "backwards": al terminar vuelven a su estilo normal, así no estorban el efecto al pasar el mouse. */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: none; } }
+.stagger > *:nth-child(1) { --i: 0; } .stagger > *:nth-child(2) { --i: 1; } .stagger > *:nth-child(3) { --i: 2; }
+.stagger > *:nth-child(4) { --i: 3; } .stagger > *:nth-child(5) { --i: 4; } .stagger > *:nth-child(6) { --i: 5; }
+.stagger > *:nth-child(7) { --i: 6; } .stagger > *:nth-child(8) { --i: 7; } .stagger > *:nth-child(n+9) { --i: 8; }
+.reveal:not(.in) .stagger > * { opacity: 0; }
+.reveal.in .stagger > * { animation: fadeUp 0.75s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 90ms + 120ms); }
+.reveal.in .stagger-pop > * { animation-name: popIn; }
+
+/* Líneas decorativas que se dibujan al aparecer la sección. */
+.divider-line { transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s; }
+.reveal:not(.in) .divider-line { transform: scaleX(0); }
+
+/* Las fotos grandes se asientan (zoom suave) al entrar. */
+.reveal img.settle { transition: opacity 0.5s ease, transform 1.6s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.reveal:not(.in) img.settle { transform: scale(1.07); }
+
+/* Entrada de la portada: el texto sube escalonado. El título solo se desplaza (no cambia opacidad)
+   para no retrasar la carga percibida. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes heroUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes heroSlide { from { transform: translateY(26px); } to { transform: none; } }
+  @keyframes frameIn { from { opacity: 0; transform: translate(-14px, -14px); } to { opacity: 1; transform: none; } }
+  #inicio h1 { animation: heroSlide 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: 0.08s; }
+  #inicio h1 ~ p { animation: heroUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: 0.22s; }
+  #inicio .hero-ctas { animation: heroUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: 0.36s; }
+  #inicio .hero-badge { animation: heroUp 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+  #inicio .hero-frame { animation: frameIn 1s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: 0.45s; }
+  #inicio .hero-features > * { animation: fadeUp 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; animation-delay: calc(0.5s + var(--i, 0) * 100ms); }
+
+  /* Botón flotante de WhatsApp: un aro suave que llama la atención sin molestar. */
+  @keyframes waPing { 0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.55); } 70%, 100% { box-shadow: 0 0 0 16px rgba(37,211,102,0); } }
+  .whatsapp-fab { animation: waPing 2.8s ease-out 3s infinite; }
+
+  /* Cambio de página: aparece suave. */
+  @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .page-enter { animation: pageIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1); }
+
+  /* Preguntas frecuentes: la respuesta se despliega con un fundido. */
+  @keyframes faqOpen { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .faq-answer { animation: faqOpen 0.3s ease; }
+}
+
 /* Tarjetas de tratamientos: la foto se acerca un poco y la tarjeta se eleva. */
 .svc-card { box-shadow: 0 1px 2px rgba(23,27,22,0.04); transition: border-color 0.3s, transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s; }
 .svc-card img { transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.22,0.61,0.36,1) !important; }

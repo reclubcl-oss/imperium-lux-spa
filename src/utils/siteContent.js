@@ -56,7 +56,7 @@ export const DEFAULTS = {
   },
   fidelidad: {
     etiqueta: 'PROGRAMA DE FIDELIDAD',
-    titulo: 'Tu Tarjeta de Sellos',
+    titulo: 'Tarjeta de Fidelidad',
     texto: 'Cada visita suma un sello. Al completar la tarjeta, tienes un beneficio especial en tu siguiente sesión.',
     enlace: 'Agenda tu próxima cita →',
   },
@@ -128,7 +128,7 @@ export const SECCION_NOMBRES = {
   proceso: 'Primera visita',
   preguntas: 'Preguntas frecuentes',
   cifras: 'Cifras',
-  fidelidad: 'Tarjeta de sellos',
+  fidelidad: 'Tarjeta de fidelidad',
   comunidad: 'Comunidad (video)',
   nosotros: 'Nosotros',
   ubicacion: 'Ubicación',

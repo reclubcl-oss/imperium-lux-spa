@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import InstallApp from './InstallApp';
 import logo from '../assets/brand/logo.webp';
@@ -7,6 +7,13 @@ import { useSite } from '../utils/siteContent';
 export default function Navbar() {
   const site = useSite();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const navigate = useNavigate();
 
   const links = [
@@ -33,8 +40,8 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{ fontFamily: 'var(--font-sans)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,254,251,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--border)' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px' }}>
+    <nav style={{ fontFamily: 'var(--font-sans)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,254,251,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--border)', boxShadow: scrolled ? '0 6px 24px rgba(23,27,22,0.08)' : 'none', transition: 'box-shadow 0.3s' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: scrolled ? '64px' : '72px', transition: 'height 0.3s' }}>
 
         {/* Logo */}
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>

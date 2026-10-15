@@ -27,7 +27,7 @@ export default function Footer() {
   return (
     <footer id="contacto" style={{ background: 'var(--forest)', padding: 'clamp(48px,8vw,72px) 16px 28px' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,200px),1fr))', gap: 'clamp(28px,5vw,48px)', marginBottom: '40px' }}>
+        <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,200px),1fr))', gap: 'clamp(28px,5vw,48px)', marginBottom: '40px' }}>
 
           {/* Brand */}
           <div>

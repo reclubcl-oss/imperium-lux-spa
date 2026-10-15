@@ -4,6 +4,7 @@ import VideoSection from '../components/VideoSection';
 import Location from '../components/Location';
 import PromoPopup from '../components/PromoPopup';
 import LoyaltySection from '../components/LoyaltySection';
+import CountUp from '../components/CountUp';
 import InfoStrip from '../components/InfoStrip';
 import ProcessSection from '../components/ProcessSection';
 import FaqSection from '../components/FaqSection';
@@ -62,10 +63,10 @@ export default function Home() {
   const blocks = {
     cifras: (
       <section style={{ background: 'var(--cream)', padding: 'clamp(40px,7vw,64px) 16px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
+        <div className="stagger" style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 'clamp(20px,4vw,32px)', textAlign: 'center' }}>
           {stats.map(({ number, label, idx }) => (
             <div key={idx ?? label}>
-              <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 400, marginBottom: '6px' }}>{idx === undefined ? number : <E path={`cifras.items.${idx}.numero`} />}</p>
+              <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--olive)', fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 400, marginBottom: '6px' }}>{editing ? (idx === undefined ? number : <E path={`cifras.items.${idx}.numero`} />) : /^\d+$/.test(String(number)) ? <CountUp to={Number(number)} /> : number}</p>
               <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: 'clamp(0.7rem,1.5vw,0.82rem)', letterSpacing: '0.05em', fontWeight: 500 }}>{idx === undefined ? label : <E path={`cifras.items.${idx}.texto`} />}</p>
             </div>
           ))}
@@ -96,7 +97,7 @@ export default function Home() {
           <div style={{ minHeight: '320px', position: 'relative', order: site.nosotros.fotoLado === 'izquierda' ? -1 : 0 }}>
             <SideToggle path="nosotros.fotoLado" />
             <EditableImage path="nosotros.imagenUrl" nombre="nosotros">
-              <FadeImage src={site.nosotros.imagenUrl || cienciaImg} alt="Instalaciones y espacios de Clínica Estética Imperium" containerStyle={{ minHeight: '320px' }} />
+              <FadeImage imgClassName="settle" src={site.nosotros.imagenUrl || cienciaImg} alt="Instalaciones y espacios de Clínica Estética Imperium" containerStyle={{ minHeight: '320px' }} />
             </EditableImage>
           </div>
         </div>

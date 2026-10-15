@@ -17,7 +17,7 @@ export default function Location() {
         </div>
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 'clamp(20px,4vw,40px)', alignItems: 'start' }}>
+        <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 'clamp(20px,4vw,40px)', alignItems: 'start' }}>
 
           {/* Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

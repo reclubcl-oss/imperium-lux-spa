@@ -7,7 +7,7 @@ import { useState } from 'react';
  * suave en vez de "poof" apenas termina de cargar (mientras tanto se ve el
  * mismo tono neutro de fondo, no un hueco en blanco).
  */
-export default function FadeImage({ src, alt, aspectRatio, radius, imgStyle, containerStyle }) {
+export default function FadeImage({ src, alt, aspectRatio, radius, imgStyle, containerStyle, imgClassName }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <div style={{
@@ -16,7 +16,7 @@ export default function FadeImage({ src, alt, aspectRatio, radius, imgStyle, con
       ...containerStyle,
     }}>
       <img
-        src={src} alt={alt} loading="lazy" decoding="async"
+        src={src} alt={alt} loading="lazy" decoding="async" className={imgClassName}
         onLoad={() => setLoaded(true)}
         style={{
           width: '100%', height: '100%', objectFit: 'cover', display: 'block',

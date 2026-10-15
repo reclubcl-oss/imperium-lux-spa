@@ -14,7 +14,7 @@ export default function ProcessSection() {
           <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-sans)', fontSize: 'clamp(0.9rem,2vw,1rem)', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}><E path="proceso.texto" /></p>
         </div>
 
-        <ol style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: 'clamp(16px,3vw,24px)' }}>
+        <ol className="stagger" style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: 'clamp(16px,3vw,24px)' }}>
           {proceso.pasos.map((p, i) => (
             <li key={i} style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '16px', padding: '26px 22px', position: 'relative' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', background: 'var(--olive)', color: 'var(--cream)', fontFamily: 'var(--font-serif)', fontSize: '1.1rem', marginBottom: '16px' }}>{i + 1}</span>

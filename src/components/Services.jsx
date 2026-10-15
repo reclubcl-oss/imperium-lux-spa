@@ -222,7 +222,7 @@ export default function Services() {
                 nombre, precio y los dos botones) en vez de ir directo a
                 reservar, para que el cliente pueda elegir entre agendar de
                 una vez o preguntar antes por WhatsApp. */}
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: isMobile ? '12px' : '18px' }}>
+            <div className="stagger" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: isMobile ? '12px' : '18px' }}>
               {visible.map(s => (
                 <ServiceCard key={s.id} service={s} isMobile={isMobile} imageSrc={imageFor(s)} onOpen={setSelectedService} />
               ))}

@@ -62,7 +62,7 @@ export default function Servicios() {
                   <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.4rem,4vw,1.9rem)', color: 'var(--ink)', fontWeight: 400 }}>{cat}</h2>
                   <span style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{list.length} {list.length === 1 ? 'tratamiento' : 'tratamientos'}</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fill,minmax(min(100%,230px),1fr))', gap: isMobile ? '12px' : '20px' }}>
+                <div className="stagger" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fill,minmax(min(100%,230px),1fr))', gap: isMobile ? '12px' : '20px' }}>
                   {list.map(s => <ServiceCard key={s.id} service={s} isMobile={isMobile} imageSrc={serviceImage(s)} onOpen={setSelected} />)}
                 </div>
               </div>

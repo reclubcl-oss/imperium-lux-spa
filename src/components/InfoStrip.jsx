@@ -15,7 +15,7 @@ const ITEMS = [
 export default function InfoStrip() {
   return (
     <section aria-label="Información de contacto" style={{ background: 'var(--cream)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '22px 16px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: '18px 28px', alignItems: 'center' }}>
+      <div className="stagger" style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: '18px 28px', alignItems: 'center' }}>
         {ITEMS.map(it => (
           <div key={it.path} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon(it.svg)}</div>

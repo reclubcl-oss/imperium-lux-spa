@@ -18,7 +18,7 @@ export default function FaqSection() {
           <SectionDivider margin="0 auto" />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {preguntas.items.map((it, i) => {
             const isOpen = editing || open === i;
             return (
@@ -35,7 +35,7 @@ export default function FaqSection() {
                   )}
                 </div>
                 {isOpen && (
-                  <p id={`faq-${i}`} style={{ padding: '0 20px 20px', fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.92rem', lineHeight: 1.75 }}><E path={`preguntas.items.${i}.respuesta`} /></p>
+                  <p id={`faq-${i}`} className="faq-answer" style={{ padding: '0 20px 20px', fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.92rem', lineHeight: 1.75 }}><E path={`preguntas.items.${i}.respuesta`} /></p>
                 )}
               </div>
             );
