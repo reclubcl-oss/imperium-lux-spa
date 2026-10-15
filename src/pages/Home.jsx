@@ -4,6 +4,9 @@ import VideoSection from '../components/VideoSection';
 import Location from '../components/Location';
 import PromoPopup from '../components/PromoPopup';
 import LoyaltySection from '../components/LoyaltySection';
+import InfoStrip from '../components/InfoStrip';
+import ProcessSection from '../components/ProcessSection';
+import FaqSection from '../components/FaqSection';
 import FadeImage from '../components/FadeImage';
 import cienciaImg from '../assets/brand/ciencia.webp';
 import { useState, useEffect, useContext } from 'react';
@@ -101,12 +104,15 @@ export default function Home() {
     ),
     ubicacion: <Location />,
     servicios: <Services />,
+    proceso: <ProcessSection />,
+    preguntas: <FaqSection />,
   };
 
   return (
     <>
       <PromoPopup />
       <Hero />
+      <InfoStrip />
       {site.secciones.map((sec, i) => (editing || sec.visible) && (
         <SectionShell key={sec.id} id={sec.id} index={i} total={site.secciones.length} visible={sec.visible}>{blocks[sec.id]}</SectionShell>
       ))}

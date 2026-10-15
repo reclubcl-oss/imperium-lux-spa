@@ -13,7 +13,7 @@ export default function PromoPopup() {
     try { dismissed = sessionStorage.getItem(DISMISS_KEY) === '1'; } catch { /* localStorage puede estar bloqueado */ }
     if (dismissed) return;
 
-    const timer = setTimeout(() => setVisible(true), 2500);
+    const timer = setTimeout(() => setVisible(true), 14000);
     return () => clearTimeout(timer);
   }, []);
 

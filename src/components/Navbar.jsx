@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const links = [
     { label: 'Inicio',     to: '/' },
-    { label: 'Servicios',  to: '/#servicios' },
+    { label: 'Servicios',  to: '/servicios' },
     { label: 'Nosotros',   to: '/#nosotros' },
     { label: 'Contacto',   to: '/#contacto' },
   ];

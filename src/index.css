@@ -14,8 +14,10 @@
   --gold-accent: #B5924D;
   /* Dorado para TEXTO sobre fondo claro (cumple contraste 4.5:1); --gold-accent queda para fondos oscuros y detalles */
   --gold-text: #86672A;
+  /* Verde muy suave para fondos de apoyo: da un aire más limpio y clínico. */
+  --sage: #F1F5EF;
 
-  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans: -apple-system, 'system-ui', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -35,6 +37,7 @@ html {
 }
 
 body {
+  font-variant-numeric: lining-nums;
   font-family: var(--font-sans);
   background-color: var(--cream);
   color: var(--ink-soft);
@@ -43,7 +46,30 @@ body {
 h1, h2, h3, h4 {
   font-family: var(--font-serif);
   font-weight: 400;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
 }
+
+/* ── Pulido visual ───────────────────────────────────────────── */
+/* Aparición suave de cada sección al llegar a ella (la clase la agrega App.jsx; sin JS todo se ve igual). */
+.reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* Tarjetas de tratamientos: la foto se acerca un poco y la tarjeta se eleva. */
+.svc-card { box-shadow: 0 1px 2px rgba(23,27,22,0.04); transition: border-color 0.3s, transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s; }
+.svc-card img { transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.22,0.61,0.36,1) !important; }
+@media (hover: hover) {
+  .svc-card:hover { box-shadow: 0 18px 38px rgba(23,27,22,0.12); }
+  .svc-card:hover img { transform: scale(1.06); }
+}
+
+/* Botones principales: leve elevación al pasar el mouse. */
+a[href="/reservar"] { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+@media (hover: hover) { a[href="/reservar"]:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(38,58,34,0.22); } }
+
+/* Texto seleccionado con el dorado de la marca. */
+::selection { background: rgba(181,146,77,0.3); }
 
 /* ── React Calendar ─────────────────────────────────────────── */
 .react-calendar {
@@ -199,3 +225,14 @@ h1, h2, h3, h4 {
 .react-calendar__month-view__days__day--neighboringMonth {
   color: rgba(23,27,22,0.2) !important;
 }
+
+/* ── Celular: primera pantalla con más autoridad ─────────────── */
+@media (max-width: 640px) {
+  .hero-ctas { flex-direction: column; gap: 10px !important; }
+  .hero-ctas a { width: 100%; justify-content: center; }
+  .hero-media { aspect-ratio: 4 / 3 !important; }
+  /* La barra fija de abajo reemplaza al botón flotante de WhatsApp. */
+  .whatsapp-fab { display: none !important; }
+  body { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 641px) { .mobile-cta-bar { display: none !important; } }

@@ -40,6 +40,13 @@ export const DEFAULTS = {
     titulo: 'Tratamientos Exclusivos',
     texto: 'Cada tratamiento es una experiencia única, diseñada para revelar tu mejor versión. Toca una foto para ver más.',
   },
+  paginaServicios: {
+    etiqueta: 'TRATAMIENTOS',
+    titulo: 'Todos nuestros tratamientos',
+    texto: 'Conoce cada tratamiento y reserva el que necesitas. Toca una foto para ver el detalle, el precio y agendar.',
+    ctaTitulo: '¿No sabes cuál elegir?',
+    ctaTexto: 'Agenda una evaluación y te orientamos según tus necesidades y objetivos.',
+  },
   cifras: {
     mostrarTratamientos: true,
     items: [
@@ -80,20 +87,46 @@ export const DEFAULTS = {
       { dia: 'Domingo', horas: 'Cerrado' },
     ],
   },
+  proceso: {
+    etiqueta: 'TU PRIMERA VISITA',
+    titulo: 'Así es tu atención en Imperium',
+    texto: 'Un camino claro, de la reserva al seguimiento de tu tratamiento.',
+    pasos: [
+      { titulo: 'Reserva tu hora', texto: 'Agenda online o por WhatsApp, eligiendo el día y la hora que mejor te acomode.' },
+      { titulo: 'Evaluación personalizada', texto: 'Cada procedimiento comienza con una evaluación orientada a tus necesidades y objetivos.' },
+      { titulo: 'Tu tratamiento', texto: 'Procedimientos y tecnología seleccionados según tu evaluación, con atención 1 a 1.' },
+      { titulo: 'Te acompañamos', texto: 'Seguimos contigo en cada etapa, y cada visita suma sellos en tu tarjeta de fidelidad.' },
+    ],
+  },
+  preguntas: {
+    etiqueta: 'PREGUNTAS FRECUENTES',
+    titulo: 'Resolvemos tus dudas',
+    items: [
+      { pregunta: '¿Cómo reservo una hora?', respuesta: 'Elige tu tratamiento en la sección Reservar, escoge un día y horario disponible y confirma con tus datos. Recibirás la confirmación por correo.' },
+      { pregunta: '¿Puedo cambiar o cancelar mi cita?', respuesta: 'Sí, hasta 24 horas antes desde el enlace de tu confirmación. Si te queda menos tiempo, escríbenos por WhatsApp.' },
+      { pregunta: '¿Necesito una evaluación antes del tratamiento?', respuesta: 'Cada procedimiento comienza con una evaluación orientada a tus necesidades y objetivos.' },
+      { pregunta: '¿Dónde están y cuál es el horario?', respuesta: 'Estamos en 2 Oriente 124, Viña del Mar. Atendemos de lunes a viernes de 9:00 a 20:00 y los sábados de 9:00 a 18:00.' },
+      { pregunta: '¿Cómo funciona el Club de Fidelidad?', respuesta: 'Cada visita suma un sello. Al completar la tarjeta tienes un beneficio especial en tu siguiente sesión.' },
+    ],
+  },
   footer: { descripcion: 'Estética avanzada con atención personalizada en Viña del Mar.' },
   // Orden y visibilidad de las secciones de la portada (la portada principal siempre va primero).
   secciones: [
     { id: 'servicios', visible: true },
+    { id: 'proceso', visible: true },
     { id: 'cifras', visible: true },
     { id: 'fidelidad', visible: true },
     { id: 'comunidad', visible: true },
     { id: 'nosotros', visible: true },
+    { id: 'preguntas', visible: true },
     { id: 'ubicacion', visible: true },
   ],
 };
 
 export const SECCION_NOMBRES = {
   servicios: 'Tratamientos',
+  proceso: 'Primera visita',
+  preguntas: 'Preguntas frecuentes',
   cifras: 'Cifras',
   fidelidad: 'Tarjeta de sellos',
   comunidad: 'Comunidad (video)',

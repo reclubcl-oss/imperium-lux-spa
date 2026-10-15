@@ -43,7 +43,7 @@ export default function Footer() {
           <div>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--cream)', fontSize: '1.05rem', fontWeight: 400, marginBottom: '16px' }}>Enlaces</h2>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[['Inicio','/'],['Servicios','/#servicios'],['Reservar','/reservar'],['Fidelidad','/#fidelidad'],['Ubicación','/#ubicacion'],['Contacto','/#contacto']].map(([label,href]) => (
+              {[['Inicio','/'],['Servicios','/servicios'],['Reservar','/reservar'],['Fidelidad','/#fidelidad'],['Ubicación','/#ubicacion'],['Contacto','/#contacto']].map(([label,href]) => (
                 <li key={label}>
                   <a href={href} onClick={e => handleAnchorClick(e, href)} style={{ fontFamily: 'var(--font-sans)', color: 'rgba(255,254,251,0.65)', fontSize: '0.85rem', textDecoration: 'none', transition: 'color 0.2s' }}
                     onMouseEnter={e => e.target.style.color = 'var(--gold-accent)'}

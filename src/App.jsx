@@ -8,6 +8,7 @@ import Loyalty from './pages/Loyalty';
 import Creditos from './pages/Creditos';
 import Privacidad from './pages/Privacidad';
 import Cita from './pages/Cita';
+import Servicios from './pages/Servicios';
 import StandalonePrompt from './components/StandalonePrompt';
 import WhatsAppFab from './components/WhatsAppFab';
 import LinkHub from './pages/LinkHub';
@@ -23,6 +24,7 @@ import './index.css';
 
 const PAGE_TITLES = {
   '/':         'Clínica Estética Imperium | Viña del Mar',
+  '/servicios': 'Tratamientos estéticos | Clínica Estética Imperium',
   '/reservar': 'Reservar hora | Clínica Estética Imperium',
   '/fidelidad': 'Club de Fidelidad | Clínica Estética Imperium',
   '/creditos': 'Créditos | Clínica Estética Imperium',
@@ -51,6 +53,24 @@ function Layout() {
     if (pathname !== '/admin' && pathname !== '/intranet') trackPageView(pathname);
   }, [pathname, site.marca.tituloPagina]);
 
+  // Cada sección de la portada aparece suavemente al llegar a ella. La clase se agrega acá (no en el
+  // HTML) para que, si algo falla, el contenido igual se vea.
+  useEffect(() => {
+    if (pathname !== '/' || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    const timer = setTimeout(() => {
+      document.querySelectorAll('main > section:not(#inicio), footer').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight) return; // ya visible: no se anima
+        el.classList.add('reveal');
+        io.observe(el);
+      });
+    }, 600);
+    return () => { clearTimeout(timer); io.disconnect(); };
+  }, [pathname]);
+
   // React Router no reinicia el scroll al cambiar de página (a diferencia de
   // una navegación normal del navegador) — si vienes desplazado hacia abajo
   // en una página y haces click en un <Link> (ej. "Agendar" en una tarjeta de
@@ -78,6 +98,7 @@ function Layout() {
         <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
         <Routes>
           <Route path="/"         element={<Home />} />
+          <Route path="/servicios" element={<Servicios />} />
           <Route path="/reservar" element={<Booking />} />
           <Route path="/admin"    element={<Admin />} />
           <Route path="/intranet" element={<Intranet />} />

@@ -30,6 +30,13 @@ const BLOQUES = [
     { path: 'servicios.titulo', label: 'TÍTULO' },
     { path: 'servicios.texto', label: 'DESCRIPCIÓN', tipo: 'area' },
   ] },
+  { id: 'paginaServicios', titulo: 'Página de tratamientos (/servicios)', ayuda: 'Los tratamientos en sí (nombre, precio, foto) se editan en la pestaña Servicios.', campos: [
+    { path: 'paginaServicios.etiqueta', label: 'TEXTO PEQUEÑO' },
+    { path: 'paginaServicios.titulo', label: 'TÍTULO' },
+    { path: 'paginaServicios.texto', label: 'DESCRIPCIÓN', tipo: 'area' },
+    { path: 'paginaServicios.ctaTitulo', label: 'TÍTULO DEL CIERRE' },
+    { path: 'paginaServicios.ctaTexto', label: 'TEXTO DEL CIERRE', tipo: 'area' },
+  ] },
   { id: 'cifras', titulo: 'Cifras', ayuda: 'Los números destacados bajo los tratamientos. Solo pon datos reales.', campos: [
     { path: 'cifras.mostrarTratamientos', label: 'Mostrar la cantidad de tratamientos (se calcula sola)', tipo: 'bool' },
     { path: 'cifras.items', label: 'CIFRAS', tipo: 'lista', items: [{ k: 'numero', label: 'Número (ej. 6, 1 a 1)' }, { k: 'texto', label: 'Texto' }], nuevo: { numero: '', texto: '' } },

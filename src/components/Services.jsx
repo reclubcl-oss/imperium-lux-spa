@@ -1,28 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import SectionDivider from './SectionDivider';
-import { getActiveServices } from '../utils/services';
-import { CATEGORY_DEFAULT_IMAGE } from '../utils/categoryDefaults';
-import { TREATMENT_DEFAULT_IMAGE } from '../utils/treatmentDefaults';
+import { useServiceList, useIsMobile, catOf, serviceImage } from '../utils/useServices';
 import { formatCLP } from '../utils/format';
 import { whatsappLink } from '../utils/contact';
-import { SERVICIOS_RESPALDO } from '../utils/serviciosRespaldo';
 import { useFocusTrap } from '../utils/useFocusTrap';
 import { useSite } from '../utils/siteContent';
 import { E } from './Editable';
-
-// true en pantallas de celular (<= 640px); se actualiza si giras el teléfono.
-function useIsMobile() {
-  const query = '(max-width: 640px)';
-  const [mobile, setMobile] = useState(() => window.matchMedia(query).matches);
-  useEffect(() => {
-    const mq = window.matchMedia(query);
-    const onChange = (e) => setMobile(e.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return mobile;
-}
 
 const moreBtn = { display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', color: 'var(--olive)', border: '1px solid var(--olive)', padding: '12px 24px', borderRadius: '99px', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s, color 0.2s', maxWidth: '100%', textAlign: 'left' };
 const moreBtnOn = (e) => { e.currentTarget.style.background = 'var(--olive)'; e.currentTarget.style.color = 'var(--cream)'; };
@@ -70,7 +54,7 @@ const whatsappHref = (nombre) => whatsappLink(`Hola! Me gustaría más informaci
 // Ficha del tratamiento — se abre al tocar la foto en la grilla, en vez de
 // ir directo a reservar. Así el cliente ve bien de qué se trata antes de
 // decidir entre agendar de una vez o preguntar primero por WhatsApp.
-function TreatmentDetailModal({ service, imageSrc, onClose }) {
+export function TreatmentDetailModal({ service, imageSrc, onClose }) {
   const cardRef = useRef(null);
   useFocusTrap(cardRef);
 
@@ -141,28 +125,37 @@ function TreatmentDetailModal({ service, imageSrc, onClose }) {
   );
 }
 
+// Tarjeta de un tratamiento (la usan la portada y la página /servicios).
+export function ServiceCard({ service, isMobile, imageSrc, onOpen }) {
+  return (
+                <div role="button" tabIndex={0} className="svc-card"
+                  onClick={() => onOpen(service)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(service); } }}
+                  style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold-accent)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}>
+                  {imageSrc ? <TreatmentImage src={imageSrc} alt={service.nombre} /> : <PlaceholderPhoto nombre={service.nombre} />}
+                  <div style={{ padding: isMobile ? '12px 12px 14px' : '16px 18px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: isMobile ? '0.92rem' : '1.02rem', lineHeight: 1.3, fontWeight: 400, marginBottom: service.precio ? '6px' : 0 }}>{service.nombre}</h3>
+                    {service.precio && (
+                      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontSize: '0.88rem', fontWeight: 700 }}>{formatCLP(service.precio)}</p>
+                    )}
+                  </div>
+                </div>
+  );
+}
+
 export default function Services() {
   useSite(); // se vuelve a dibujar cuando cambia el contenido (p. ej. el número de WhatsApp)
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { services, loading } = useServiceList();
   const [filter, setFilter] = useState(null);
   const [expanded, setExpanded] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    // Si la base de datos no responde (o viene vacía por una caída), se muestra
-    // la copia de respaldo en vez de una sección vacía.
-    getActiveServices().then(({ success, data }) => {
-      setServices(success && data?.length ? data : SERVICIOS_RESPALDO);
-      setLoading(false);
-    }).catch(() => { setServices(SERVICIOS_RESPALDO); setLoading(false); });
-  }, []);
-
   // Sin pestaña "Todos": con 24 tratamientos, en celular eso era un scroll
   // interminable. Se abre en la primera categoría y el resto se ve con los
   // chips o con "Ver más". Los tratamientos sin categoría van en "Otros".
-  const catOf = (s) => s.categoria || 'Otros';
   const categories = useMemo(() => [...new Set(services.map(catOf))], [services]);
   const activeCategory = categories.includes(filter) ? filter : categories[0];
   const filtered = services.filter(s => catOf(s) === activeCategory);
@@ -182,7 +175,7 @@ export default function Services() {
     document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const imageFor = (s) => s.foto_url || TREATMENT_DEFAULT_IMAGE[s.nombre] || CATEGORY_DEFAULT_IMAGE[s.categoria];
+  const imageFor = serviceImage;
 
   return (
     <section id="servicios" style={{ background: 'var(--cream-soft)', padding: 'clamp(60px,10vw,100px) 16px' }}>
@@ -231,20 +224,7 @@ export default function Services() {
                 una vez o preguntar antes por WhatsApp. */}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: isMobile ? '12px' : '18px' }}>
               {visible.map(s => (
-                <div key={s.id} role="button" tabIndex={0}
-                  onClick={() => setSelectedService(s)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedService(s); } }}
-                  style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', transition: 'border-color 0.3s, transform 0.3s', cursor: 'pointer' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold-accent)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}>
-                  {imageFor(s) ? <TreatmentImage src={imageFor(s)} alt={s.nombre} /> : <PlaceholderPhoto nombre={s.nombre} />}
-                  <div style={{ padding: isMobile ? '12px 12px 14px' : '16px 18px' }}>
-                    <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: isMobile ? '0.92rem' : '1.02rem', lineHeight: 1.3, fontWeight: 400, marginBottom: s.precio ? '6px' : 0 }}>{s.nombre}</h3>
-                    {s.precio && (
-                      <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--olive)', fontSize: '0.88rem', fontWeight: 700 }}>{formatCLP(s.precio)}</p>
-                    )}
-                  </div>
-                </div>
+                <ServiceCard key={s.id} service={s} isMobile={isMobile} imageSrc={imageFor(s)} onOpen={setSelectedService} />
               ))}
             </div>
 
@@ -268,7 +248,10 @@ export default function Services() {
           </>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <div style={{ textAlign: 'center', marginTop: '40px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link to="/servicios" style={{ border: '1px solid var(--olive)', color: 'var(--olive)', padding: '15px clamp(24px,5vw,40px)', fontSize: '0.85rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', display: 'inline-block' }}>
+            Ver todos los tratamientos
+          </Link>
           <Link to="/reservar" style={{ background: 'var(--olive)', color: 'var(--cream)', padding: '15px clamp(28px,6vw,48px)', fontSize: '0.85rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', display: 'inline-block', transition: 'background 0.3s' }}
             onMouseEnter={e => e.target.style.background = 'var(--olive-light)'}
             onMouseLeave={e => e.target.style.background = 'var(--olive)'}>

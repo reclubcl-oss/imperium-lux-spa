@@ -3,27 +3,57 @@ import SectionDivider from './SectionDivider';
 import { useSite } from '../utils/siteContent';
 import { E } from './Editable';
 
+// Sin autoplay con ahorro de datos, 2G/3G o "reducir movimiento": ahí solo arranca si la persona toca play.
+function skipAutoplay() {
+  const conn = navigator.connection;
+  const slow = conn && (conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || ''));
+  return !!slow || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export default function VideoSection() {
   const { comunidad: t } = useSite();
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
+  const userPaused = useRef(false);
   const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [visible, setVisible] = useState(false);
 
+  // El video arranca solo, sin sonido, cuando la sección aparece en pantalla, y se pausa al salir
+  // (así no gasta datos ni batería de fondo). Si el navegador lo bloquea, queda el botón de play.
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.15 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
+    const section = sectionRef.current;
+    const video = videoRef.current;
+    if (!section || !video) return;
+    const auto = !skipAutoplay();
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true);
+        if (auto && !userPaused.current) {
+          video.muted = true;
+          video.play().catch(() => {});
+        }
+      } else if (!video.paused) {
+        video.pause();
+      }
+    }, { threshold: 0.35 });
+    observer.observe(section);
     return () => observer.disconnect();
   }, []);
 
   const toggle = () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else          { v.pause(); setPlaying(false); }
+    if (v.paused) { userPaused.current = false; v.play().catch(() => {}); }
+    else          { userPaused.current = true; v.pause(); }
+  };
+
+  const toggleSound = (e) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuted(v.muted);
   };
 
   return (
@@ -42,7 +72,7 @@ export default function VideoSection() {
 
         {/* Video */}
         <div onClick={toggle} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)', boxShadow: '0 20px 48px rgba(23,27,22,0.1)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <video ref={videoRef} src={t.videoUrl || "/imperium-video-web.mp4"} preload="none" playsInline onEnded={() => setPlaying(false)}
+          <video ref={videoRef} src={t.videoUrl || "/imperium-video-web.mp4"} preload="metadata" muted loop playsInline aria-label="Video de agradecimiento a nuestra comunidad" onPlaying={() => setPlaying(true)} onPause={() => setPlaying(false)}
             style={{ width: '100%', display: 'block', maxHeight: 'clamp(240px,60vw,520px)', objectFit: 'cover', background: 'var(--forest)' }} />
 
           {/* Play overlay */}
@@ -55,6 +85,14 @@ export default function VideoSection() {
               </div>
               <p style={{ fontFamily:'var(--font-sans)', color:'var(--cream)', fontSize:'clamp(0.65rem,1.5vw,0.75rem)', letterSpacing:'0.2em', fontWeight:600 }}>REPRODUCIR</p>
             </div>
+          )}
+
+          {/* Sonido: arranca silenciado; la persona puede activarlo */}
+          {playing && (
+            <button type="button" onClick={toggleSound} aria-label={muted ? 'Activar sonido' : 'Silenciar'}
+              style={{ position:'absolute', bottom:'14px', left:'14px', background:'rgba(23,27,22,0.75)', border:'none', borderRadius:'6px', padding:'6px 12px', cursor:'pointer', color:'var(--cream)', fontFamily:'var(--font-sans)', fontSize:'0.65rem', letterSpacing:'0.1em' }}>
+              {muted ? '🔇 ACTIVAR SONIDO' : '🔊 SILENCIAR'}
+            </button>
           )}
 
           {/* Pause hint */}

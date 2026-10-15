@@ -63,7 +63,7 @@ function HeroVideo({ poster = heroPoster, videoSrc = '/imperium-hero.mp4' }) {
   };
 
   return (
-    <div onClick={playNow} style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', cursor: playing ? 'default' : 'pointer' }}>
+    <div className="hero-media" onClick={playNow} style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', cursor: playing ? 'default' : 'pointer' }}>
       <img ref={imgRef} src={poster} alt="Clínica Estética Imperium" width="720" height="1280" fetchPriority="high" decoding="async"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       <video ref={videoRef} muted loop playsInline preload="none" onPlaying={() => { setPlaying(true); setNeedsTap(false); }} aria-label="Video de Clínica Estética Imperium"
@@ -124,6 +124,11 @@ export default function Hero() {
 
           {/* Text */}
           <div>
+            <p style={{ marginBottom: '22px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--sage)', border: '1px solid var(--border)', borderRadius: '99px', padding: '8px 16px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--olive)', letterSpacing: '0.02em' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" /><path d="M9 12l2 2 4-4" /></svg>
+              <span><E path="hero.nota" /></span>
+            </p>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
               <div style={{ width: '28px', height: '2px', background: 'var(--gold-accent)' }} />
               <p style={{ color: 'var(--gold-text)', fontSize: '0.72rem', letterSpacing: '0.22em', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>
@@ -131,29 +136,25 @@ export default function Hero() {
               </p>
             </div>
 
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2.2rem,5.5vw,3.4rem)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.15, marginBottom: '22px' }}>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2.3rem,6vw,4rem)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.08, marginBottom: '24px' }}>
               <E path="hero.titulo" />
             </h1>
 
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem', color: 'var(--ink-soft)', lineHeight: 1.8, marginBottom: '32px', maxWidth: '440px' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1rem,1.6vw,1.12rem)', color: 'var(--ink-soft)', lineHeight: 1.8, marginBottom: '34px', maxWidth: '470px' }}>
               <E path="hero.texto" />
             </p>
 
-            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <Link to="/reservar" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--olive)', color: 'var(--cream)', padding: '15px 28px', fontSize: '0.9rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', transition: 'background 0.2s' }}
+            <div className="hero-ctas" style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+              <Link to="/reservar" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--olive)', color: 'var(--cream)', padding: '16px 32px', fontSize: '0.92rem', fontWeight: 600, borderRadius: '99px', textDecoration: 'none', fontFamily: 'var(--font-sans)', letterSpacing: '0.02em' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--olive-light)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--olive)'}>
                 <E path="hero.botonPrincipal" />
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </Link>
-              <a href="#servicios" style={{ display: 'inline-flex', alignItems: 'center', background: 'transparent', color: 'var(--ink)', padding: '15px 28px', fontSize: '0.9rem', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', fontFamily: 'var(--font-sans)', border: '1px solid var(--border)' }}>
+              <Link to="/servicios" style={{ display: 'inline-flex', alignItems: 'center', background: 'transparent', color: 'var(--ink)', padding: '16px 32px', fontSize: '0.92rem', fontWeight: 600, borderRadius: '99px', textDecoration: 'none', fontFamily: 'var(--font-sans)', border: '1px solid var(--ink-soft)' }}>
                 <E path="hero.botonSecundario" />
-              </a>
+              </Link>
             </div>
-
-            <p style={{ marginTop: '28px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--ink-soft)', letterSpacing: '0.02em' }}>
-              <E path="hero.nota" />
-            </p>
           </div>
 
           {/* Image */}
