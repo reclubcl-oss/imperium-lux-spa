@@ -74,3 +74,17 @@ export function EditableImage({ path, nombre, label = 'Cambiar foto', children }
     </>
   );
 }
+
+// Botón para pasar la foto de un lado al otro (solo en modo edición). El padre debe ser position: relative.
+export function SideToggle({ path }) {
+  const { editing, setValue } = useContext(EditContext);
+  const site = useSite();
+  if (!editing) return null;
+  const izquierda = getPath(site, path) === 'izquierda';
+  return (
+    <button type="button" onClick={e => { e.stopPropagation(); setValue(path, izquierda ? 'derecha' : 'izquierda'); }}
+      style={{ position: 'absolute', bottom: '12px', left: '12px', zIndex: 20, background: 'var(--cream)', color: 'var(--ink)', border: '1px solid var(--gold-accent)', borderRadius: '8px', padding: '9px 14px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 6px 18px rgba(23,27,22,0.25)' }}>
+      ⇄ Foto a la {izquierda ? 'derecha' : 'izquierda'}
+    </button>
+  );
+}

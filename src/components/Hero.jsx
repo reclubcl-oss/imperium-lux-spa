@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../utils/siteContent';
-import { E, EditableImage } from './Editable';
+import { E, EditableImage, SideToggle } from './Editable';
 // Va en public/ (URL fija) para poder precargarla desde index.html: es el elemento
 // más grande de la portada y así arranca a bajar antes de que cargue el JavaScript.
 const heroPoster = '/hero-poster.webp';
@@ -157,7 +157,7 @@ export default function Hero() {
           </div>
 
           {/* Image */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', order: hero.fotoLado === 'izquierda' ? -1 : 0 }}>
             <div aria-hidden="true" style={{
               position: 'absolute', inset: '16px -16px -16px 16px', borderRadius: '20px',
               border: '1.5px solid var(--gold-accent)', zIndex: 0,
@@ -165,6 +165,7 @@ export default function Hero() {
             <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 24px 60px rgba(23,27,22,0.14)', zIndex: 1 }}>
               <EditableImage path="hero.imagenUrl" nombre="portada" label="Cambiar foto de portada"><HeroVideo key={`${hero.imagenUrl}|${hero.videoUrl}`} poster={hero.imagenUrl || heroPoster} videoSrc={hero.videoUrl || '/imperium-hero.mp4'} /></EditableImage>
             </div>
+            <SideToggle path="hero.fotoLado" />
           </div>
         </div>
 

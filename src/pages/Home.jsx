@@ -6,13 +6,40 @@ import PromoPopup from '../components/PromoPopup';
 import LoyaltySection from '../components/LoyaltySection';
 import FadeImage from '../components/FadeImage';
 import cienciaImg from '../assets/brand/ciencia.webp';
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { getActiveServices } from '../utils/services';
-import { useSite } from '../utils/siteContent';
-import { E, EditableImage } from '../components/Editable';
+import { useSite, EditContext, SECCION_NOMBRES } from '../utils/siteContent';
+import { E, EditableImage, SideToggle } from '../components/Editable';
+
+// En modo edición cada sección lleva una barra para arrastrarla (o subirla/bajarla) y ocultarla;
+// la página se reacomoda sola. Fuera del admin no agrega nada.
+function SectionShell({ id, index, total, visible, children }) {
+  const { editing, moveSection, dropSection, toggleSection } = useContext(EditContext);
+  const [over, setOver] = useState(false);
+  if (!editing) return children;
+  const small = { background: 'transparent', border: '1px solid rgba(255,254,251,0.35)', color: 'var(--cream)', borderRadius: '6px', padding: '4px 9px', fontFamily: 'var(--font-sans)', fontSize: '0.74rem', cursor: 'pointer' };
+  return (
+    <div style={{ position: 'relative', opacity: visible ? 1 : 0.4, outline: over ? '3px dashed var(--gold-accent)' : 'none', outlineOffset: '-3px', transition: 'opacity 0.2s' }}
+      onDragOver={e => { e.preventDefault(); setOver(true); }}
+      onDragLeave={() => setOver(false)}
+      onDrop={e => { e.preventDefault(); setOver(false); dropSection(e.dataTransfer.getData('text/plain'), id); }}>
+      <div style={{ position: 'sticky', top: '8px', height: 0, zIndex: 40, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(23,38,22,0.92)', color: 'var(--cream)', borderRadius: '10px', padding: '6px 8px', boxShadow: '0 8px 22px rgba(23,27,22,0.3)', fontFamily: 'var(--font-sans)', fontSize: '0.76rem', fontWeight: 700 }}>
+          <span draggable onDragStart={e => { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; }}
+            title="Arrastra para mover la sección" style={{ cursor: 'grab', padding: '4px 8px', letterSpacing: '0.1em' }}>⠿ {SECCION_NOMBRES[id]}</span>
+          <button type="button" style={small} onClick={() => moveSection(id, -1)} disabled={index === 0} aria-label="Subir sección">↑</button>
+          <button type="button" style={small} onClick={() => moveSection(id, 1)} disabled={index === total - 1} aria-label="Bajar sección">↓</button>
+          <button type="button" style={small} onClick={() => toggleSection(id)}>{visible ? 'Ocultar' : 'Mostrar'}</button>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export default function Home() {
+  const { editing } = useContext(EditContext);
   // Solo cifras verificables: la cantidad de tratamientos sale en vivo de la
   // base de datos, y el resto son datos fijos del servicio. Si más adelante
   // quieres mostrar "clientes atendidos" o "años de experiencia", agrega esas
@@ -63,7 +90,8 @@ export default function Home() {
               <E path="nosotros.boton" />
             </Link>
           </div>
-          <div style={{ minHeight: '320px', position: 'relative' }}>
+          <div style={{ minHeight: '320px', position: 'relative', order: site.nosotros.fotoLado === 'izquierda' ? -1 : 0 }}>
+            <SideToggle path="nosotros.fotoLado" />
             <EditableImage path="nosotros.imagenUrl" nombre="nosotros">
               <FadeImage src={site.nosotros.imagenUrl || cienciaImg} alt="Instalaciones y espacios de Clínica Estética Imperium" containerStyle={{ minHeight: '320px' }} />
             </EditableImage>
@@ -72,16 +100,15 @@ export default function Home() {
       </section>
     ),
     ubicacion: <Location />,
+    servicios: <Services />,
   };
 
   return (
     <>
       <PromoPopup />
       <Hero />
-      <Services />
-
-      {site.secciones.filter(sec => sec.visible).map(sec => (
-        <Fragment key={sec.id}>{blocks[sec.id]}</Fragment>
+      {site.secciones.map((sec, i) => (editing || sec.visible) && (
+        <SectionShell key={sec.id} id={sec.id} index={i} total={site.secciones.length} visible={sec.visible}>{blocks[sec.id]}</SectionShell>
       ))}
     </>
   );

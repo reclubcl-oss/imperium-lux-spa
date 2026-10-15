@@ -22,6 +22,7 @@ const BLOQUES = [
     { path: 'hero.nota', label: 'NOTA BAJO LOS BOTONES' },
     { path: 'hero.imagenUrl', label: 'FOTO DE PORTADA', tipo: 'imagen', nombre: 'portada', ayuda: 'Se ve mientras carga el video y cuando el video no puede reproducirse.' },
     { path: 'hero.videoUrl', label: 'VIDEO DE PORTADA (enlace .mp4)', ayuda: 'Déjalo vacío para usar el video actual.' },
+    { path: 'hero.fotoLado', label: 'POSICIÓN DE LA FOTO', tipo: 'select', opciones: [['derecha', 'A la derecha'], ['izquierda', 'A la izquierda']] },
     { path: 'hero.destacados', label: 'LOS 3 DESTACADOS', tipo: 'lista', fija: true, items: [{ k: 'titulo', label: 'Título' }, { k: 'texto', label: 'Texto' }] },
   ] },
   { id: 'servicios', titulo: 'Encabezado de tratamientos', ayuda: 'Los tratamientos en sí se editan en la pestaña Servicios.', campos: [
@@ -53,6 +54,7 @@ const BLOQUES = [
     { path: 'nosotros.parrafo2', label: 'PÁRRAFO 2', tipo: 'area' },
     { path: 'nosotros.boton', label: 'BOTÓN' },
     { path: 'nosotros.imagenUrl', label: 'FOTO', tipo: 'imagen', nombre: 'nosotros' },
+    { path: 'nosotros.fotoLado', label: 'POSICIÓN DE LA FOTO', tipo: 'select', opciones: [['derecha', 'A la derecha'], ['izquierda', 'A la izquierda']] },
   ] },
   { id: 'ubicacion', titulo: 'Ubicación y horarios', campos: [
     { path: 'ubicacion.etiqueta', label: 'TEXTO PEQUEÑO' },
@@ -142,6 +144,11 @@ function Campo({ campo, form, setForm }) {
   return (
     <div>
       <span style={label}>{campo.label}</span>
+      {campo.tipo === 'select' && (
+        <select style={input} value={value ?? ''} onChange={e => onChange(e.target.value)}>
+          {campo.opciones.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+        </select>
+      )}
       {campo.tipo === 'area' && <textarea style={{ ...input, minHeight: '78px', resize: 'vertical' }} value={value ?? ''} onChange={e => onChange(e.target.value)} />}
       {campo.tipo === 'imagen' && <ImageField value={value} onChange={onChange} nombre={campo.nombre} />}
       {campo.tipo === 'lista' && <ListField campo={campo} value={value} onChange={onChange} />}
@@ -170,7 +177,7 @@ function SeccionesOrden({ form, setForm }) {
   const toggle = (i) => setForm(f => ({ ...f, secciones: f.secciones.map((s, j) => (j === i ? { ...s, visible: !s.visible } : s)) }));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <p style={{ ...hint, marginTop: 0 }}>La portada y los tratamientos siempre van primero. Ordena el resto y oculta lo que no quieras mostrar.</p>
+      <p style={{ ...hint, marginTop: 0 }}>La portada siempre va primero. Ordena el resto y oculta lo que no quieras mostrar. También puedes arrastrarlas directo en la página.</p>
       {list.map((s, i) => (
         <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--cream-soft)', border: '1px solid var(--border-soft)', borderRadius: '8px', padding: '8px 10px', opacity: s.visible ? 1 : 0.55 }}>
           <span style={{ flex: 1, fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' }}>{SECCION_NOMBRES[s.id]}</span>
@@ -232,7 +239,32 @@ export default function AdminSiteView() {
 
   const discard = () => { setForm(structuredClone(current)); setMsg(null); };
 
-  const editCtx = useMemo(() => ({ editing: true, setValue: (path, v) => setForm(f => setIn(f, path, v)) }), []);
+  const editCtx = useMemo(() => {
+    const setSecciones = (fn) => setForm(f => ({ ...f, secciones: fn(f.secciones) }));
+    return {
+      editing: true,
+      setValue: (path, v) => setForm(f => setIn(f, path, v)),
+      moveSection: (id, d) => setSecciones(list => {
+        const i = list.findIndex(s => s.id === id);
+        const j = i + d;
+        if (i < 0 || j < 0 || j >= list.length) return list;
+        const next = [...list];
+        [next[i], next[j]] = [next[j], next[i]];
+        return next;
+      }),
+      // Soltar una sección sobre otra: queda en el lugar de esa (las demás se corren).
+      dropSection: (fromId, toId) => setSecciones(list => {
+        const from = list.findIndex(s => s.id === fromId);
+        const to = list.findIndex(s => s.id === toId);
+        if (from < 0 || to < 0 || from === to) return list;
+        const next = [...list];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        return next;
+      }),
+      toggleSection: (id) => setSecciones(list => list.map(s => (s.id === id ? { ...s, visible: !s.visible } : s))),
+    };
+  }, []);
   const draftCtx = useMemo(() => ({ site: form, reload: async () => {} }), [form]);
 
   const renderBloque = (b) => {
@@ -281,8 +313,8 @@ export default function AdminSiteView() {
       {modo === 'pagina' ? (
         <>
           <p style={{ ...hint, marginTop: 0, marginBottom: '12px' }}>
-            Toca cualquier texto con borde punteado y escríbelo de nuevo. En las fotos aparece un botón para cambiarlas. Cuando termines, toca <strong>Guardar cambios</strong>.
-            Para colores, orden de secciones, WhatsApp o videos usa <strong>Más ajustes</strong>.
+            Toca cualquier texto con borde punteado y escríbelo de nuevo. En las fotos aparece un botón para cambiarlas o pasarlas al otro lado. Arrastra la barra oscura de cada sección (⠿) para moverla: la página se acomoda sola. Cuando termines, toca <strong>Guardar cambios</strong>.
+            Para colores, WhatsApp o videos usa <strong>Más ajustes</strong>.
           </p>
           <SiteContext.Provider value={draftCtx}>
             <EditContext.Provider value={editCtx}>

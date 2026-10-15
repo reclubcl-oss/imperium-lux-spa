@@ -28,6 +28,7 @@ export const DEFAULTS = {
     nota: 'Clínica autorizada SEREMI de Salud · Ubicados en Viña del Mar',
     imagenUrl: '',
     videoUrl: '',
+    fotoLado: 'derecha',
     destacados: [
       { titulo: 'Atención personalizada', texto: 'Orientación pensada según tus necesidades y objetivos.' },
       { titulo: 'Tecnología avanzada', texto: 'Procedimientos y tecnología seleccionados según cada evaluación.' },
@@ -66,6 +67,7 @@ export const DEFAULTS = {
     parrafo2: 'Cada procedimiento comienza con una evaluación orientada a tus necesidades y objetivos.',
     boton: 'Solicitar evaluación',
     imagenUrl: '',
+    fotoLado: 'derecha',
   },
   ubicacion: {
     etiqueta: 'ENCUÉNTRANOS',
@@ -79,8 +81,9 @@ export const DEFAULTS = {
     ],
   },
   footer: { descripcion: 'Estética avanzada con atención personalizada en Viña del Mar.' },
-  // Orden y visibilidad de las secciones de la portada (después de Hero y Tratamientos).
+  // Orden y visibilidad de las secciones de la portada (la portada principal siempre va primero).
   secciones: [
+    { id: 'servicios', visible: true },
     { id: 'cifras', visible: true },
     { id: 'fidelidad', visible: true },
     { id: 'comunidad', visible: true },
@@ -90,6 +93,7 @@ export const DEFAULTS = {
 };
 
 export const SECCION_NOMBRES = {
+  servicios: 'Tratamientos',
   cifras: 'Cifras',
   fidelidad: 'Tarjeta de sellos',
   comunidad: 'Comunidad (video)',
@@ -114,7 +118,8 @@ function normalizeSecciones(list) {
   for (const s of Array.isArray(list) ? list : []) {
     if (s && DEFAULTS.secciones.some(d => d.id === s.id) && !seen.has(s.id)) { seen.add(s.id); out.push({ id: s.id, visible: s.visible !== false }); }
   }
-  for (const d of DEFAULTS.secciones) if (!seen.has(d.id)) out.push({ ...d });
+  // Las que falten (por ejemplo una sección nueva) entran en su lugar de fábrica.
+  DEFAULTS.secciones.forEach((d, i) => { if (!seen.has(d.id)) out.splice(Math.min(i, out.length), 0, { ...d }); });
   return out;
 }
 
@@ -161,7 +166,7 @@ export const SiteContext = createContext({ site: buildSite(null), reload: async 
 
 // Modo "editar sobre la página" (solo en el admin): cuando `editing` es true, los textos
 // y fotos marcados con <E> / <EditableImage> se pueden tocar y cambiar directamente.
-export const EditContext = createContext({ editing: false, setValue: () => {} });
+export const EditContext = createContext({ editing: false, setValue: () => {}, moveSection: () => {}, dropSection: () => {}, toggleSection: () => {} });
 
 export function useSite() {
   return useContext(SiteContext).site;
