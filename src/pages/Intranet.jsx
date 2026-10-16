@@ -56,7 +56,7 @@ function LoginScreen({ onLogin }) {
           <p style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: '1.3rem', marginBottom: '24px', fontWeight: 400 }}>Acceso Profesionales</p>
           <div style={{ marginBottom: '16px', textAlign: 'left' }}>
             <label style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-soft)', fontSize: '0.68rem', letterSpacing: '0.15em', display: 'block', marginBottom: '6px' }}>EMAIL</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@imperiumluxspa.com" autoFocus
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@correo.com" autoFocus
               style={{ ...inputStyle, width: '100%', padding: '12px 16px', fontSize: '1rem', border: `1px solid ${err ? '#B3413A' : 'var(--border)'}` }} />
           </div>
           <div style={{ marginBottom: '20px', textAlign: 'left' }}>
