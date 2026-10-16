@@ -57,7 +57,7 @@ function LoginScreen({ onLogin }) {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="tu@imperiumluxspa.com"
+              placeholder="tu@correo.com"
               autoFocus
               style={{
                 width: '100%', background: '#FFFFFF',
