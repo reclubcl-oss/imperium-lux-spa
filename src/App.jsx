@@ -48,7 +48,8 @@ function Layout() {
   useEffect(() => {
     document.title = pathname === '/' ? site.marca.tituloPagina : (PAGE_TITLES[pathname] || site.marca.tituloPagina);
     // Cada página declara su propia dirección canónica (antes todas apuntaban a la portada).
-    const url = `${window.location.origin}${pathname === '/' ? '/' : pathname}`;
+    // Siempre la dirección oficial, aunque alguien entre por la dirección antigua (evita contenido duplicado en Google).
+    const url = `https://clinicaesteticaimperium.cl${pathname === '/' ? '/' : pathname}`;
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
     canonical.href = url;

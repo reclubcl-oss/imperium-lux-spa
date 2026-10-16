@@ -5,4 +5,4 @@ Disallow: /intranet
 Disallow: /cita
 Disallow: /api/
 
-Sitemap: https://imperium-lux-spa.vercel.app/sitemap.xml
+Sitemap: https://clinicaesteticaimperium.cl/sitemap.xml
