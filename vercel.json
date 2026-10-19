@@ -35,7 +35,7 @@
       "schedule": "0 13 * * *"
     },
     {
-      "path": "/api/keepalive",
+      "path": "/api/send-reminders?keepalive=1",
       "schedule": "0 6 * * *"
     }
   ],

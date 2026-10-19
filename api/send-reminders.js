@@ -76,6 +76,24 @@ export default async function handler(req, res) {
   const date = tomorrowInSantiago();
   const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+  // GET /api/send-reminders?keepalive=1 — tarea diaria que solo consulta la base de datos para que el plan
+  // gratuito de Supabase (que pausa el proyecto tras 7 días sin actividad) nunca lo considere inactivo.
+  // Va en este mismo archivo porque el plan gratuito de Vercel limita a 12 funciones.
+  if (req.query?.keepalive === '1') {
+    const started = Date.now();
+    const [servicios, reservas, storage] = await Promise.all([
+      supabaseAdmin.from('servicios').select('id', { count: 'exact', head: true }),
+      supabaseAdmin.from('reservas').select('id', { count: 'exact', head: true }),
+      supabaseAdmin.storage.from('servicios').list('', { limit: 1 }),
+    ]);
+    const failed = [servicios.error, reservas.error, storage.error].filter(Boolean);
+    if (failed.length) {
+      console.error('Keepalive: algo no respondió', failed.map(e => e.message));
+      return res.status(502).json({ success: false, error: failed.map(e => e.message).join(' | ') });
+    }
+    return res.status(200).json({ success: true, keepalive: true, servicios: servicios.count, reservas: reservas.count, ms: Date.now() - started });
+  }
+
   const load = (cols) => supabaseAdmin.from('reservas').select(cols).eq('fecha_iso', date).is('recordatorio_enviado_at', null);
   let { data: reservas, error } = await load('id, nombre, email, servicio, fecha, hora, cancel_token');
   // Si aún no se corrió supabase-add-gestion-citas.sql, envía igual (sin el enlace de cambio).
