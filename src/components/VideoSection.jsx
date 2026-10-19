@@ -56,6 +56,20 @@ export default function VideoSection() {
     setMuted(v.muted);
   };
 
+  // Pantalla completa: en iPhone solo el propio video puede ir a pantalla completa (webkitEnterFullscreen).
+  const goFullscreen = (e) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    setMuted(false);
+    v.play().catch(() => {});
+    const box = v.parentElement;
+    if (box.requestFullscreen) box.requestFullscreen().catch(() => v.webkitEnterFullscreen?.());
+    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+    else if (box.webkitRequestFullscreen) box.webkitRequestFullscreen();
+  };
+
   return (
     <section ref={sectionRef} style={{ background: 'var(--cream)', padding: 'clamp(60px,10vw,100px) 16px', borderTop: '1px solid var(--border)' }}>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
@@ -71,7 +85,7 @@ export default function VideoSection() {
         </div>
 
         {/* Video */}
-        <div onClick={toggle} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)', boxShadow: '0 20px 48px rgba(23,27,22,0.1)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+        <div className="vid-box" onClick={toggle} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)', boxShadow: '0 20px 48px rgba(23,27,22,0.1)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
           <video ref={videoRef} src={t.videoUrl || "/imperium-video-web.mp4"} preload="metadata" muted loop playsInline aria-label="Video de agradecimiento a nuestra comunidad" onPlaying={() => setPlaying(true)} onPause={() => setPlaying(false)}
             style={{ width: '100%', display: 'block', maxHeight: 'clamp(240px,60vw,520px)', objectFit: 'cover', background: 'var(--forest)' }} />
 
@@ -94,6 +108,11 @@ export default function VideoSection() {
               {muted ? '🔇 ACTIVAR SONIDO' : '🔊 SILENCIAR'}
             </button>
           )}
+
+          <button type="button" onClick={goFullscreen} aria-label="Ver en pantalla completa"
+            style={{ position:'absolute', top:'14px', right:'14px', background:'rgba(23,27,22,0.75)', border:'none', borderRadius:'6px', padding:'6px 12px', cursor:'pointer', color:'var(--cream)', fontFamily:'var(--font-sans)', fontSize:'0.65rem', letterSpacing:'0.1em' }}>
+            ⛶ PANTALLA COMPLETA
+          </button>
 
           {/* Pause hint */}
           {playing && (
