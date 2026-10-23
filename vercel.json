@@ -1,5 +1,50 @@
 {
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/send-reminders",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/send-reminders?keepalive=1",
+      "schedule": "0 6 * * *"
+    }
+  ],
+  "functions": {
+    "api/send-reminders.js": {
+      "maxDuration": 60
+    },
+    "api/email-send.js": {
+      "maxDuration": 60
+    }
+  }
 }

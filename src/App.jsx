@@ -1,33 +1,132 @@
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Booking from './pages/Booking';
-import Admin from './pages/Admin';
+import Loyalty from './pages/Loyalty';
+import Creditos from './pages/Creditos';
+import Privacidad from './pages/Privacidad';
+import Cita from './pages/Cita';
+import Servicios from './pages/Servicios';
+import StandalonePrompt from './components/StandalonePrompt';
+import WhatsAppFab from './components/WhatsAppFab';
+import LinkHub from './pages/LinkHub';
+import SiteProvider from './utils/SiteProvider';
+import { useSite } from './utils/siteContent';
+
+// El panel admin y la intranet solo los usa el equipo — no tiene sentido
+// que cada visitante descargue ese código para ver la página de inicio.
+const Admin = lazy(() => import('./pages/Admin'));
+const Intranet = lazy(() => import('./pages/Intranet'));
+import { initAnalytics, trackPageView } from './utils/analytics';
 import './index.css';
 
+const PAGE_TITLES = {
+  '/':         'Clínica Estética Imperium | Viña del Mar',
+  '/servicios': 'Tratamientos estéticos | Clínica Estética Imperium',
+  '/reservar': 'Reservar hora | Clínica Estética Imperium',
+  '/fidelidad': 'Club de Fidelidad | Clínica Estética Imperium',
+  '/creditos': 'Créditos | Clínica Estética Imperium',
+  '/privacidad': 'Política de Privacidad | Clínica Estética Imperium',
+  '/cita': 'Tu cita | Clínica Estética Imperium',
+  '/link':     'Clínica Estética Imperium',
+  '/admin':    'Admin | Clínica Estética Imperium',
+  '/intranet': 'Intranet | Clínica Estética Imperium',
+};
+
 function Layout() {
-  const { pathname } = useLocation();
-  const isAdmin = pathname === '/admin';
+  const { pathname, hash } = useLocation();
+  const site = useSite();
+  // La primera carga no se anima (no retrasar la portada); los cambios de página sí.
+  const [firstPath] = useState(pathname);
+  const animatePage = pathname !== firstPath;
+  const isBare = pathname === '/admin' || pathname === '/intranet' || pathname === '/link';
+
+  useEffect(() => { initAnalytics(); }, []);
+
+  useEffect(() => {
+    document.title = pathname === '/' ? site.marca.tituloPagina : (PAGE_TITLES[pathname] || site.marca.tituloPagina);
+    // Cada página declara su propia dirección canónica (antes todas apuntaban a la portada).
+    // Siempre la dirección oficial, aunque alguien entre por la dirección antigua (evita contenido duplicado en Google).
+    const url = `https://clinicaesteticaimperium.cl${pathname === '/' ? '/' : pathname}`;
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = url;
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
+    if (pathname !== '/admin' && pathname !== '/intranet') trackPageView(pathname);
+  }, [pathname, site.marca.tituloPagina]);
+
+  // Cada sección de la portada aparece suavemente al llegar a ella. La clase se agrega acá (no en el
+  // HTML) para que, si algo falla, el contenido igual se vea.
+  useEffect(() => {
+    if (pathname !== '/' || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    const timer = setTimeout(() => {
+      document.querySelectorAll('main > section:not(#inicio), footer').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight) return; // ya visible: no se anima
+        el.classList.add('reveal');
+        io.observe(el);
+      });
+    }, 600);
+    return () => { clearTimeout(timer); io.disconnect(); };
+  }, [pathname]);
+
+  // React Router no reinicia el scroll al cambiar de página (a diferencia de
+  // una navegación normal del navegador) — si vienes desplazado hacia abajo
+  // en una página y haces click en un <Link> (ej. "Agendar" en una tarjeta de
+  // tratamiento), la página nueva carga manteniendo ese mismo scroll en vez
+  // de partir arriba. Si además hay un ancla ("/#seccion", usado por
+  // Servicios/Nosotros/Ubicación/Contacto del navbar y footer), saltamos ahí
+  // en su lugar — reintentando, porque en una carga de página completa el
+  // navegador intenta saltar al ancla ANTES de que React monte el contenido.
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+    const id = hash.slice(1);
+    const tryScroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    tryScroll();
+    const retry = setTimeout(tryScroll, 350);
+    return () => clearTimeout(retry);
+  }, [pathname, hash]);
+
   return (
     <>
-      {!isAdmin && <Navbar />}
-      <main>
+      {!isBare && <Navbar />}
+      <main key={pathname} className={animatePage ? 'page-enter' : undefined}>
+        <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
         <Routes>
-          <Route path="/"        element={<Home />} />
+          <Route path="/"         element={<Home />} />
+          <Route path="/servicios" element={<Servicios />} />
           <Route path="/reservar" element={<Booking />} />
-          <Route path="/admin"   element={<Admin />} />
+          <Route path="/admin"    element={<Admin />} />
+          <Route path="/intranet" element={<Intranet />} />
+          <Route path="/fidelidad" element={<Loyalty />} />
+          <Route path="/creditos" element={<Creditos />} />
+          <Route path="/privacidad" element={<Privacidad />} />
+          <Route path="/cita" element={<Cita />} />
+          <Route path="/link" element={<LinkHub />} />
         </Routes>
+        </Suspense>
       </main>
-      {!isAdmin && <Footer />}
+      {!isBare && <Footer />}
+      {!isBare && <StandalonePrompt />}
+      {!isBare && <WhatsAppFab />}
     </>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
+    <SiteProvider>
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
+    </SiteProvider>
   );
 }
