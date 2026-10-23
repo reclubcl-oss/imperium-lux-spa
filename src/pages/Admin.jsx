@@ -10,6 +10,7 @@ import AdminLinksView from '../components/AdminLinksView';
 import AdminNotificationsView from '../components/AdminNotificationsView';
 import AdminReservasView from '../components/AdminReservasView';
 import AdminSiteView from '../components/AdminSiteView';
+import AdminStaffDetail from '../components/AdminStaffDetail';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ const actionBtn = {
 
 function StaffRow({ member, onSaved, variant = 'table' }) {
   const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ nombre: member.nombre, email: member.email || '', especialidad: member.especialidad || '' });
   const [saving, setSaving] = useState(false);
 
@@ -138,6 +140,9 @@ function StaffRow({ member, onSaved, variant = 'table' }) {
     </>
   ) : (
     <>
+      <button onClick={() => setOpen(o => !o)} style={{ ...actionBtn, marginRight: '6px', background: open ? 'var(--olive)' : 'transparent', color: open ? 'var(--cream)' : 'var(--ink)' }}>
+        {open ? 'Cerrar' : 'Tratamientos y horario'}
+      </button>
       <button onClick={() => setEditing(true)} style={{ ...actionBtn, marginRight: '6px' }}>Editar</button>
       <button onClick={toggleActivo} style={{ ...actionBtn, color: member.activo ? '#B3413A' : 'var(--olive)' }}>
         {member.activo ? 'Desactivar' : 'Activar'}
@@ -168,12 +173,14 @@ function StaffRow({ member, onSaved, variant = 'table' }) {
           </div>
         )}
         <div>{actions}</div>
+        {open && <div style={{ margin: '14px -16px -16px' }}><AdminStaffDetail member={member} /></div>}
       </div>
     );
   }
 
   return (
-    <tr style={{ borderBottom: '1px solid var(--border-soft)', opacity: member.activo ? 1 : 0.5 }}>
+    <>
+    <tr style={{ borderBottom: open ? 'none' : '1px solid var(--border-soft)', opacity: member.activo ? 1 : 0.5 }}>
       <td style={cellStyle}>
         {editing ? <input style={smallInput} value={form.nombre} onChange={e => setForm(v => ({ ...v, nombre: e.target.value }))} /> : member.nombre}
       </td>
@@ -189,6 +196,8 @@ function StaffRow({ member, onSaved, variant = 'table' }) {
       </td>
       <td style={{ ...cellStyle, whiteSpace: 'nowrap' }}>{actions}</td>
     </tr>
+    {open && <tr><td colSpan={6} style={{ padding: 0 }}><AdminStaffDetail member={member} /></td></tr>}
+    </>
   );
 }
 
@@ -311,6 +320,7 @@ function StaffManager() {
 function Dashboard({ onLogout }) {
   const [tab, setTab] = useState('reservas');
   const [reservations, setReservations] = useState([]);
+  const [staff, setStaff]             = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
 
@@ -324,7 +334,7 @@ function Dashboard({ onLogout }) {
     setLoading(false);
   });
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { reload(); getAllStaff().then(({ data }) => setStaff(data || [])); }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--cream-soft)', paddingTop: '0' }}>
@@ -377,7 +387,7 @@ function Dashboard({ onLogout }) {
         </div>
 
         {tab === 'equipo' && <StaffManager />}
-        {tab === 'calendario' && <AdminCalendarView reservations={reservations} />}
+        {tab === 'calendario' && <AdminCalendarView reservations={reservations} staff={staff} onReload={reload} />}
         {tab === 'finanzas' && <AdminFinanceView reservations={reservations} />}
         {tab === 'servicios' && <AdminServicesView />}
         {tab === 'clientes' && <AdminClientsView reservations={reservations} />}
@@ -385,7 +395,7 @@ function Dashboard({ onLogout }) {
         {tab === 'enlaces' && <AdminLinksView />}
         {tab === 'avisos' && <AdminNotificationsView />}
 
-        {tab === 'reservas' && <AdminReservasView reservations={reservations} loading={loading} error={error} onPrecioSaved={handlePrecioSaved} onReload={reload} />}
+        {tab === 'reservas' && <AdminReservasView reservations={reservations} staff={staff} loading={loading} error={error} onPrecioSaved={handlePrecioSaved} onReload={reload} />}
       </div>
 
       <style>{`

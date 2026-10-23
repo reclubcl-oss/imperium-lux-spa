@@ -11,11 +11,12 @@ const label = { display: 'block', fontFamily: SANS, fontSize: '0.64rem', letterS
 
 // Diálogo del panel: crear una reserva a mano (mode="create") o cambiar la hora
 // de una existente (mode="reschedule").
-export default function AdminReservaDialog({ mode, reservation, services = [], onClose, onDone }) {
+export default function AdminReservaDialog({ mode, reservation, services = [], staff = [], onClose, onDone }) {
   const panelRef = useRef(null);
   useFocusTrap(panelRef);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', servicio: '', notas: '' });
   const [selection, setSelection] = useState({ date: null, time: null });
+  const [staffChoice, setStaffChoice] = useState(mode === 'reschedule' && reservation?.staff_id ? reservation.staff_id : 'auto');
   const [notify, setNotify] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +36,11 @@ export default function AdminReservaDialog({ mode, reservation, services = [], o
     if (!ready || busy) return;
     setBusy(true);
     setError('');
-    const assigned = await resolveStaffForSlot(selection.date, selection.time);
+    // "Automática" reparte entre quienes hacen el tratamiento y están libres; si no, queda con quien elegiste.
+    const servicio = isCreate ? form.servicio : reservation.servicio;
+    const assigned = staffChoice === 'auto'
+      ? await resolveStaffForSlot(selection.date, selection.time, servicio)
+      : { success: true, staffId: staffChoice };
     if (!assigned.success) { setBusy(false); setError(assigned.error || 'Ese horario ya no está disponible. Elige otro.'); return; }
 
     const slot = { fecha: formatDateES(selection.date), fechaIso: toLocalISODate(selection.date), hora: selection.time, staffId: assigned.staffId, notify };
@@ -80,8 +85,18 @@ export default function AdminReservaDialog({ mode, reservation, services = [], o
           </div>
         )}
 
+        {staff.length > 0 && (
+          <div style={{ marginBottom: '18px' }}>
+            <label style={label}>PROFESIONAL</label>
+            <select style={{ ...field, cursor: 'pointer' }} value={staffChoice} onChange={e => setStaffChoice(e.target.value)}>
+              <option value="auto">Automática (reparte entre quienes hacen el tratamiento)</option>
+              {staff.filter(m => m.activo).map(m => <option key={m.id} value={m.id}>{m.nombre}{m.especialidad ? ` · ${m.especialidad}` : ''}</option>)}
+            </select>
+          </div>
+        )}
+
         <p style={{ ...label, marginBottom: '10px' }}>{isCreate ? 'FECHA Y HORA' : 'NUEVA FECHA Y HORA'}</p>
-        <BookingCalendar onSelect={setSelection} />
+        <BookingCalendar onSelect={setSelection} servicio={isCreate ? form.servicio : reservation.servicio} staffId={staffChoice === 'auto' ? undefined : staffChoice} />
 
         <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', margin: '18px 0', fontFamily: SANS, fontSize: '0.82rem', color: 'var(--ink-soft)', lineHeight: 1.6, cursor: 'pointer' }}>
           <input type="checkbox" checked={notify} onChange={e => setNotify(e.target.checked)} style={{ marginTop: '3px', accentColor: 'var(--olive)' }} />

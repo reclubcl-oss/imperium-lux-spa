@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { getStaffServiceMap, canDo } from './staffServices';
 
 export const DIAS_SEMANA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -126,7 +127,7 @@ function fetchBusySlots(fechaIso) {
     .then(async res => {
       const json = await res.json();
       if (!res.ok || !json.success) return { success: false, error: json.error || 'No se pudo cargar la disponibilidad' };
-      return { success: true, data: json.busy || [] };
+      return { success: true, data: json.busy || [], load: json.load || {} };
     })
     .catch(() => ({ success: false, error: 'No se pudo cargar la disponibilidad' }));
   busyCache.set(fechaIso, { at: Date.now(), promise });
@@ -193,9 +194,11 @@ export async function getAvailableSlots(staffId, date) {
  * que ya no le pide al cliente elegir profesional; la asignación se resuelve
  * (silenciosamente) recién al confirmar, con resolveStaffForSlot().
  */
-export async function getAvailableSlotsAnyStaff(date) {
-  const { success, data: staffList, error } = await getStaffList();
+export async function getAvailableSlotsAnyStaff(date, servicio) {
+  const { success, data: allStaff, error } = await getStaffList();
   if (!success) return { success: false, error, data: [] };
+  const map = await getStaffServiceMap();
+  const staffList = allStaff.filter(s => canDo(map, s.id, servicio));
   if (staffList.length === 0) return { success: true, data: [] };
 
   const results = await Promise.all(staffList.map(s => getAvailableSlots(s.id, date)));
@@ -205,21 +208,28 @@ export async function getAvailableSlotsAnyStaff(date) {
 }
 
 /**
- * Elige qué profesional activo atiende una fecha/hora ya elegidas por el cliente.
+ * Elige qué profesional atiende una fecha/hora ya elegidas por el cliente: entre quienes
+ * hacen ese tratamiento y están libres, el que lleva menos citas (una semana antes y
+ * después), para repartir el trabajo parejo. Si empatan, el primero de la lista.
  * Se llama justo antes de guardar la reserva (no al mostrar el calendario) para
  * no asignar a alguien que se ocupó mientras el cliente completaba el formulario.
  */
-export async function resolveStaffForSlot(date, time) {
-  const { success, data: staffList, error } = await getStaffList();
+export async function resolveStaffForSlot(date, time, servicio) {
+  const { success, data: allStaff, error } = await getStaffList();
   if (!success) return { success: false, error };
+  const map = await getStaffServiceMap();
+  const staffList = allStaff.filter(s => canDo(map, s.id, servicio));
+  const busy = await fetchBusySlots(toLocalISODate(date));
+  const load = busy.success ? busy.load : {};
 
+  const free = [];
   for (const s of staffList) {
     const result = await getAvailableSlots(s.id, date);
-    if (result.success && result.data.includes(time)) {
-      return { success: true, staffId: s.id, staffNombre: s.nombre, staffEmail: s.email };
-    }
+    if (result.success && result.data.includes(time)) free.push(s);
   }
-  return { success: false, error: 'Ese horario ya no está disponible. Por favor elige otro.' };
+  if (free.length === 0) return { success: false, error: 'Ese horario ya no está disponible. Por favor elige otro.' };
+  const best = free.reduce((a, b) => ((load[b.id] || 0) < (load[a.id] || 0) ? b : a));
+  return { success: true, staffId: best.id, staffNombre: best.nombre, staffEmail: best.email };
 }
 
 /**

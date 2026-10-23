@@ -172,7 +172,7 @@ export default function Booking() {
 
     // Se asigna el profesional recién ahora (no se le muestra al cliente),
     // así evitamos reservar a alguien que se ocupó mientras llenaba el formulario.
-    const assigned = await resolveStaffForSlot(selection.date, selection.time);
+    const assigned = await resolveStaffForSlot(selection.date, selection.time, form.servicio);
     if (!assigned.success) {
       setErrorMsg(assigned.error);
       setStatus('error');
@@ -364,7 +364,7 @@ export default function Booking() {
             boxShadow: '0 12px 32px rgba(23,27,22,0.05)',
           }}>
             <StepLabel number="1" text="Elige fecha y hora" />
-            <BookingCalendar onSelect={handleSelection} />
+            <BookingCalendar onSelect={handleSelection} servicio={form.servicio} />
 
             {/* Selection summary */}
             {selection.date && selection.time && (

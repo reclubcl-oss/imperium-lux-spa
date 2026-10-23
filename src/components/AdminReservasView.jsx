@@ -3,6 +3,7 @@ import { updateReservationPrecio } from '../utils/finance';
 import Icon from './icons';
 import ConfirmDialog from './ConfirmDialog';
 import AdminReservaDialog from './AdminReservaDialog';
+import ReassignDialog from './ReassignDialog';
 import { adminReservaAction } from '../utils/adminReservas';
 import { getActiveServices } from '../utils/services';
 
@@ -137,20 +138,23 @@ const Pill = ({ children }) => (
   <span style={{ background: 'rgba(38,58,34,0.07)', color: 'var(--olive)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 600, fontFamily: SANS, whiteSpace: 'nowrap' }}>{children}</span>
 );
 
-function RowActions({ r, busy, onReschedule, onCancel }) {
+function RowActions({ r, busy, onReschedule, onReassign, onCancel }) {
   const btn = { background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px 12px', fontFamily: SANS, fontSize: '0.72rem', fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' };
   return (
     <span style={{ display: 'inline-flex', gap: '8px' }}>
       <button type="button" disabled={busy} onClick={onReschedule} aria-label={`Cambiar la hora de ${r.nombre}`} style={{ ...btn, color: 'var(--olive)' }}>Cambiar hora</button>
+      <button type="button" disabled={busy} onClick={onReassign} aria-label={`Reasignar la cita de ${r.nombre} a otro profesional`} style={{ ...btn, color: 'var(--olive)' }}>Reasignar</button>
       <button type="button" disabled={busy} onClick={onCancel} aria-label={`Cancelar la reserva de ${r.nombre}`} style={{ ...btn, color: '#B3413A', borderColor: 'rgba(179,65,58,0.3)' }}>Cancelar</button>
     </span>
   );
 }
 
 // ── Vista principal ─────────────────────────────────────────────────────────
-export default function AdminReservasView({ reservations, loading, error, onPrecioSaved, onReload }) {
+export default function AdminReservasView({ reservations, staff = [], loading, error, onPrecioSaved, onReload }) {
   const [filterService, setFilterService] = useState('');
   const [filterDate, setFilterDate] = useState('');
+  const [filterStaff, setFilterStaff] = useState('');
+  const [toReassign, setToReassign] = useState(null);
   const [search, setSearch] = useState('');
   const [dialog, setDialog] = useState(null); // { mode: 'create' | 'reschedule', reservation? }
   const [toCancel, setToCancel] = useState(null);
@@ -182,14 +186,15 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
 
   const filtered = useMemo(() => reservations.filter(r => {
     const okService = !filterService || r.servicio === filterService;
+    const okStaff = !filterStaff || (filterStaff === 'none' ? !r.staff_id : r.staff_id === filterStaff);
     const okDate = !filterDate || (r.fecha && r.fecha.toLowerCase().includes(filterDate.toLowerCase()));
     const q = search.toLowerCase();
     const okSearch = !search || [r.nombre, r.email, r.telefono, r.servicio].some(f => f?.toLowerCase().includes(q));
-    return okService && okDate && okSearch;
-  }), [reservations, filterService, filterDate, search]);
+    return okService && okStaff && okDate && okSearch;
+  }), [reservations, filterService, filterStaff, filterDate, search]);
 
-  const hasFilters = search || filterService || filterDate;
-  const clear = () => { setSearch(''); setFilterService(''); setFilterDate(''); };
+  const hasFilters = search || filterService || filterStaff || filterDate;
+  const clear = () => { setSearch(''); setFilterService(''); setFilterStaff(''); setFilterDate(''); };
 
   const openCreate = async () => {
     if (!services.length) { const res = await getActiveServices(); setServices(res.data || []); }
@@ -267,6 +272,13 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
               <option value="">Todos los servicios</option>
               {allServices.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            {staff.length > 0 && (
+              <select value={filterStaff} onChange={e => setFilterStaff(e.target.value)} aria-label="Filtrar por profesional" style={{ ...fieldStyle, flex: '1 1 170px', cursor: 'pointer' }}>
+                <option value="">Todos los profesionales</option>
+                {staff.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                <option value="none">Sin asignar</option>
+              </select>
+            )}
             <input type="text" placeholder="Fecha (ej: abril, lunes)" value={filterDate} onChange={e => setFilterDate(e.target.value)} onFocus={focusOn} onBlur={focusOff} style={{ ...fieldStyle, flex: '1 1 160px' }} />
             {hasFilters && (
               <button type="button" onClick={clear} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink-soft)', padding: '9px 14px', borderRadius: '10px', fontFamily: SANS, fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer' }}>
@@ -302,7 +314,7 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
                       <td style={td}><PrecioCell reservation={r} onSaved={onPrecioSaved} /></td>
                       <td style={td}>{r.telefono || '—'}</td>
                       <td style={td}>{r.email || '—'}</td>
-                      <td style={{ ...td, textAlign: 'right' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></td>
+                      <td style={{ ...td, textAlign: 'right' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onReassign={() => setToReassign(r)} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -334,7 +346,7 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
                       <PrecioCell reservation={r} onSaved={onPrecioSaved} />
                     </div>
                   </div>
-                  <div style={{ marginTop: '14px' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></div>
+                  <div style={{ marginTop: '14px' }}><RowActions r={r} busy={busyId === r.id} onReschedule={() => setDialog({ mode: 'reschedule', reservation: r })} onReassign={() => setToReassign(r)} onCancel={() => { setNotifyCancel(true); setToCancel(r); }} /></div>
                 </div>
               ))}
             </div>
@@ -343,8 +355,17 @@ export default function AdminReservasView({ reservations, loading, error, onPrec
       </div>
 
       {dialog && (
-        <AdminReservaDialog mode={dialog.mode} reservation={dialog.reservation} services={services} onClose={() => setDialog(null)}
+        <AdminReservaDialog mode={dialog.mode} reservation={dialog.reservation} services={services} staff={staff} onClose={() => setDialog(null)}
           onDone={(res) => done(res, dialog.mode === 'create' ? 'Reserva creada.' : 'Hora cambiada.')} />
+      )}
+
+      {toReassign && (
+        <ReassignDialog reservation={toReassign} staff={staff} onClose={() => setToReassign(null)}
+          onDone={(res) => {
+            setToReassign(null);
+            setActionMsg({ ok: true, text: `Cita reasignada a ${res.staffNombre}.${res.staffNotified ? ` Se avisó por correo a ${res.staffNotified} profesional${res.staffNotified > 1 ? 'es' : ''}.` : ''}` });
+            onReload?.();
+          }} />
       )}
 
       <ConfirmDialog open={!!toCancel} title="¿Cancelar esta reserva?" confirmLabel="SÍ, CANCELAR" cancelLabel="NO, MANTENERLA" danger onConfirm={confirmCancel} onCancel={() => setToCancel(null)}>

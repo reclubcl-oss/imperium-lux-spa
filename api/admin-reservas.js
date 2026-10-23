@@ -91,6 +91,40 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, emailSent, emailConfigured });
   }
 
+  // ── Reasignar a otro profesional (misma fecha y hora) ──────────────────────
+  if (action === 'reassign') {
+    if (typeof id !== 'string' || !UUID_RE.test(id)) return fail(res, 400, 'Reserva inválida');
+    if (typeof staffId !== 'string' || !UUID_RE.test(staffId)) return fail(res, 400, 'Elige un profesional.');
+
+    const { data: row } = await supabaseAdmin.from('reservas').select('nombre, servicio, fecha, hora, staff_id').eq('id', id).maybeSingle();
+    if (!row) return fail(res, 404, 'No encontramos esa reserva.');
+    if (row.staff_id === staffId) return fail(res, 400, 'Esa cita ya está con ese profesional.');
+    const { data: people } = await supabaseAdmin.from('staff').select('id, nombre, email').in('id', [staffId, row.staff_id].filter(Boolean));
+    const next = people?.find(p => p.id === staffId);
+    const prev = people?.find(p => p.id === row.staff_id);
+    if (!next) return fail(res, 404, 'No encontramos a ese profesional.');
+
+    const { error } = await supabaseAdmin.from('reservas').update({ staff_id: staffId }).eq('id', id);
+    if (error) {
+      if (error.code === '23505') return fail(res, 409, `${next.nombre} ya tiene una cita a esa hora.`);
+      return fail(res, 500, 'No se pudo reasignar la cita.');
+    }
+
+    // Se avisa a los profesionales (la clienta no ve quién la atiende, así que a ella no).
+    let staffNotified = 0;
+    if (notify) {
+      const rows = [['Clienta', row.nombre], ['Tratamiento', row.servicio], ['Fecha', row.fecha], ['Hora', `${row.hora} hrs`]];
+      const send = async (person, title, intro) => {
+        if (!person?.email) return;
+        const { html, text } = brandedEmail({ eyebrow: 'CAMBIO EN TU AGENDA', title, intro, rows });
+        if (await sendMailSafe({ to: person.email, subject: `${title} · ${CLINIC.nombre}`, html, text })) staffNotified++;
+      };
+      await send(next, 'Tienes una cita nueva', `Hola ${next.nombre.split(' ')[0]}, te asignamos esta cita:`);
+      if (prev) await send(prev, 'Una cita ya no es tuya', `Hola ${prev.nombre.split(' ')[0]}, esta cita pasó a ${next.nombre}:`);
+    }
+    return res.status(200).json({ success: true, staffNotified, emailConfigured, staffNombre: next.nombre });
+  }
+
   // ── Crear reserva manual ───────────────────────────────────────────────────
   if (action === 'create') {
     const str = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;

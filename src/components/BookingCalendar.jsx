@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import { getAvailableSlotsAnyStaff } from '../utils/schedule';
+import { getAvailableSlotsAnyStaff, getAvailableSlots } from '../utils/schedule';
 
 function TimeSlot({ time, isSelected, onSelect }) {
   const [hover, setHover] = useState(false);
@@ -35,7 +35,9 @@ function TimeSlot({ time, isSelected, onSelect }) {
   );
 }
 
-export default function BookingCalendar({ onSelect }) {
+// `servicio`: solo muestra horas de profesionales que hacen ese tratamiento.
+// `staffId`: (panel admin) solo las horas de ese profesional.
+export default function BookingCalendar({ onSelect, servicio, staffId }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -47,14 +49,25 @@ export default function BookingCalendar({ onSelect }) {
 
   useEffect(() => {
     if (!selectedDate) return;
+    let alive = true;
     setLoading(true);
     setError('');
-    getAvailableSlotsAnyStaff(selectedDate).then(({ success, data, error }) => {
-      if (success) setSlots(data);
-      else setError(error);
+    const request = staffId ? getAvailableSlots(staffId, selectedDate) : getAvailableSlotsAnyStaff(selectedDate, servicio);
+    request.then(({ success, data, error }) => {
+      if (!alive) return;
+      if (success) {
+        setSlots(data);
+        // Si cambió el tratamiento o el profesional y la hora elegida ya no existe, se deselecciona.
+        if (selectedTime && !data.includes(selectedTime)) {
+          setSelectedTime(null);
+          onSelect({ date: selectedDate, time: null });
+        }
+      } else setError(error);
       setLoading(false);
     });
-  }, [selectedDate]);
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, servicio, staffId]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);

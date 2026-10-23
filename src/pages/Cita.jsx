@@ -57,7 +57,7 @@ export default function Cita() {
     if (!selection.date || !selection.time) return;
     setBusy(true);
     setMessage('');
-    const assigned = await resolveStaffForSlot(selection.date, selection.time);
+    const assigned = await resolveStaffForSlot(selection.date, selection.time, appt.servicio);
     if (!assigned.success) { setBusy(false); setMessage(assigned.error || 'Ese horario ya no está disponible. Elige otro.'); return; }
     const res = await api({
       action: 'reschedule', token, fechaIso: toLocalISODate(selection.date), hora: selection.time,
@@ -110,7 +110,7 @@ export default function Cita() {
       <>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'clamp(1.5rem,4vw,1.9rem)', color: 'var(--ink)', marginBottom: '6px', textAlign: 'center' }}>Elige tu nueva hora</h1>
         <p style={{ ...body, textAlign: 'center', marginBottom: '22px' }}>Hoy tienes: <strong style={{ color: 'var(--ink)' }}>{appt.fecha}, {appt.hora} hrs</strong></p>
-        <BookingCalendar onSelect={setSelection} />
+        <BookingCalendar onSelect={setSelection} servicio={appt.servicio} />
         {message && <p style={{ fontFamily: SANS, color: '#B3413A', fontSize: '0.84rem', margin: '16px 0 0', textAlign: 'center' }}>{message}</p>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '22px' }}>
           <button type="button" onClick={reschedule} disabled={!selection.date || !selection.time || busy}
